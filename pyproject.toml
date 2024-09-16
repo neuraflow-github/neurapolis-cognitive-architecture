@@ -24,6 +24,7 @@ pytz = "^2024.2"
 neurapolis-retriever = {git = "https://github.com/neuraflow-github/neurapolis-retriever.git"}
 
 
+
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
 

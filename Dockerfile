@@ -5,6 +5,13 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock* ./
 COPY src ./src
 
+RUN apt-get update && apt-get install -y git
+
+# Remove the git config line with the hardcoded token
+# Instead, use ARG to allow passing the token at build time
+ARG GITHUB_TOKEN
+RUN git config --global url."https://$(echo ${GITHUB_TOKEN}@github.com/)".insteadOf "https://github.com/"
+
 RUN pip install --upgrade pip && \
     pip install poetry && \
     poetry config virtualenvs.create false && \
