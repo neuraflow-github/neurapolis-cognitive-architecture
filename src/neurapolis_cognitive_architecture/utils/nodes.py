@@ -1,6 +1,6 @@
 from functools import lru_cache
 from langchain_openai import AzureChatOpenAI
-from cognitive_architecture.utils.tools import tools
+from neurapolis_cognitive_architecture.utils.tools import tools
 from langchain import hub
 from langchain_aws import ChatBedrock
 from langchain_core.runnables import RunnableLambda
@@ -27,9 +27,7 @@ async def call_model(state, config):
         name="agent",
     )
 
-    current_date = datetime.datetime.now(pytz.UTC).date()
-
-    prompt = hub.pull("neurapolis-ca")
+    prompt = hub.pull("neurapolis-ca-dev")
 
     model = prompt | model.bind_tools(tools)
     response = await model.ainvoke(messages)
@@ -41,9 +39,6 @@ async def call_tool(state, config):
     tool_call = last_message.tool_calls[0]
     query = tool_call["args"]["full_query"]
 
-    from langchain_core.runnables import chain
-
-    @chain
     def get_page_contents(query):
 
         from neurapolis_retriever.graph import graph as graph_retriever
@@ -62,7 +57,7 @@ async def call_tool(state, config):
                         page_contents += f"Access URL: {hit.related_file.access_url}\n"
         return page_contents.strip()
 
-    page_contents = get_page_contents.invoke(query)
+    page_contents = get_page_contents(query)
 
     function_message = ToolMessage(
         content=page_contents, name=tool_call["name"], tool_call_id=tool_call["id"]

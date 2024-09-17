@@ -5,12 +5,12 @@ load_dotenv()
 from typing import TypedDict, Literal, Dict, Any
 
 from langgraph.graph import StateGraph, END
-from cognitive_architecture.utils.nodes import (
+from neurapolis_cognitive_architecture.utils.nodes import (
     call_model,
     should_continue,
     call_tool,
 )
-from cognitive_architecture.utils.state import AgentState
+from neurapolis_cognitive_architecture.utils.state import AgentState
 
 
 # Define the config

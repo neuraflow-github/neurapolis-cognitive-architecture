@@ -5,7 +5,7 @@ description = "Example LangGraph project for deployment to LangGraph Cloud"
 authors = [
     "langchain-ai"
 ]
-packages = [{ include = "cognitive_architecture", from = "src" }]
+packages = [{ include = "neurapolis_cognitive_architecture", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
