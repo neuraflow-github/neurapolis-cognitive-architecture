@@ -39,28 +39,45 @@ async def call_tool(state, config):
     tool_call = last_message.tool_calls[0]
     query = tool_call["args"]["full_query"]
 
-    def get_page_contents(query):
+    def extract_relevant_file_info(searches):
+        relevant_files = []
 
+        for search in searches:
+            hits = search.hits if hasattr(search, "hits") else []
+            for hit in hits:
+                if (
+                    hasattr(hit, "grading")
+                    and hit.grading is not None
+                    and getattr(hit.grading, "is_relevant", False)
+                ):
+                    if hasattr(hit, "related_file") and hit.related_file is not None:
+                        file_info = {
+                            "name": hit.related_file.name,
+                            "access_url": hit.related_file.access_url,
+                            "extracted_text": (
+                                hit.related_file.extracted_text
+                                if hasattr(hit.related_file, "extracted_text")
+                                else None
+                            ),
+                        }
+                        relevant_files.append(file_info)
+
+        return relevant_files
+
+    def get_relevant_content(query):
         from neurapolis_retriever.graph import graph as graph_retriever
 
         results = graph_retriever.invoke({"query": query})
         searches = results.get("searches", [])
-        page_contents = ""
-        for search in searches[:1]:
-            hits = search.hits if hasattr(search, "hits") else []
-            for hit in hits:
-                print(hit)
-                if hasattr(hit, "related_file") and hit.related_file is not None:
-                    if hasattr(hit.related_file, "extracted_text"):
-                        page_contents += hit.related_file.extracted_text + "\n"
-                    if hasattr(hit.related_file, "access_url"):
-                        page_contents += f"Access URL: {hit.related_file.access_url}\n"
-        return page_contents.strip()
+        relevant_files = extract_relevant_file_info(searches)
+        return relevant_files
 
-    page_contents = get_page_contents(query)
+    relevant_content = get_relevant_content(query)
 
     function_message = ToolMessage(
-        content=page_contents, name=tool_call["name"], tool_call_id=tool_call["id"]
+        content=str(relevant_content),
+        name=tool_call["name"],
+        tool_call_id=tool_call["id"],
     )
 
     return {"messages": [function_message]}
