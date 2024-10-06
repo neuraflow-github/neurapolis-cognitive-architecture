@@ -21,7 +21,9 @@ fastapi = "^0.114.2"
 uvicorn = "^0.30.6"
 sse-starlette = "^2.1.3"
 pytz = "^2024.2"
-neurapolis-retriever = {git = "https://github.com/neuraflow-github/neurapolis-retriever.git"}
+streamlit = "^1.38.0"
+streamlit-feedback = "^0.1.3"
+neurapolis-retriever = {path = "/Users/pascal/neurapolis-retriever", develop = true}
 
 
 
