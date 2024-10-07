@@ -21,58 +21,48 @@ class NeurapolisCognitiveArchitecture:
         query: str,
         date_filter: Optional[DateFilter],
         send_loader_update_to_client: Callable[[LoaderUpdate], None],
-        send_message_to_client: Callable[[str], None],
+        send_message_to_client: Callable[[Message], None],
     ):
-        # graph.invoke(
-        #     {
-        #         "query": query,
-        #     },
-        #     {
-        #         "send_loader_update_to_client": send_loader_update_to_client,
-        #         "send_message_to_client": send_message_to_client,
-        #     },
-        # )
+        from neurapolis_cognitive_architecture.agent import graph
 
-        # Mock loader updates
-        for i in range(5):
-            await asyncio.sleep(1)  # Simulate some processing time
-            loader_update = LoaderUpdate(
-                retriever_step=RetrieverStep.PLANNER,
-                search_count=i + 1,
-                hit_count=i * 2,
-                relevant_hit_count=i,
-                log_entries=[
-                    TextLoaderLogEntry(
-                        str(uuid4()),
-                        "Processing step " + str(i + 1),
-                    ),
-                ],
-            )
-            await send_loader_update_to_client(loader_update)
-        # Mock message with file info
-        file_info = FileInfo(
-            id="123",
-            name="example.pdf",
-            description="An example PDF file",
-            text="This is the content of the PDF file.",
-            created_at=datetime.now(),
-            pdf_url="https://example.com/example.pdf",
-            highlight_areas=[
-                FileHighlightArea(
-                    page_index=0,
-                    left_percentage=10.0,
-                    top_percentage=20.0,
-                    width_percentage=30.0,
-                    height_percentage=5.0,
-                )
-            ],
-        )
-        message = Message(
-            "msg_123",
-            MessageRole.AI,
-            "Here's the information you requested.",
+        state = {"messages": []}
+        config = {"thread_id": thread_id}
+
+        from langchain_core.messages import HumanMessage
+
+        state["messages"].append(HumanMessage(content=query))
+
+        async for event in graph.astream(
+            state,
+            {
+                "send_loader_update_to_client": send_loader_update_to_client,
+                "send_message_to_client": send_message_to_client,
+                "thread_id": thread_id,
+            },
+        ):
+            print(event)
+            if isinstance(event, dict) and "agent" in event:
+                agent_messages = event["agent"].get("messages", [])
+                for msg in agent_messages:
+                    if hasattr(msg, "content") and msg.content:
+                        await send_message_to_client(
+                            Message(str(uuid4()), MessageRole.AI, msg.content, None, [])
+                        )
+
+
+if __name__ == "__main__":
+    neurapolis_cognitive_architecture = NeurapolisCognitiveArchitecture()
+    thread_id = str(uuid4())
+
+    async def print_message(message: Message):
+        print(f"AI: {message.content}")
+
+    asyncio.run(
+        neurapolis_cognitive_architecture.query(
+            thread_id,
+            "Wann wurde der letzte Spielplatz erbaut?",
             None,
-            [file_info],
+            print,
+            print_message,
         )
-        await send_message_to_client(message)
-        pass
+    )
