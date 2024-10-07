@@ -58,7 +58,13 @@ class NeurapolisCognitiveArchitecture:
             created_at=datetime.now(),
             pdf_url="https://example.com/example.pdf",
             highlight_areas=[
-                FileHighlightArea(page=1, x=100, y=200, width=300, height=50)
+                FileHighlightArea(
+                    page_index=0,
+                    left_percentage=10.0,
+                    top_percentage=20.0,
+                    width_percentage=30.0,
+                    height_percentage=5.0,
+                )
             ],
         )
         message = Message(
