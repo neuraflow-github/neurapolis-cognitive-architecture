@@ -56,7 +56,7 @@ class NeurapolisCognitiveArchitecture:
             description="An example PDF file",
             text="This is the content of the PDF file.",
             created_at=datetime.now(),
-            pdf_url="https://example.com/example.pdf",
+            pdf_url="https://ris.freiburg.de/documents.php?document_type_id=4&submission_id=1003006100000&id=69&inline=true",
             highlight_areas=[
                 FileHighlightArea(
                     page_index=0,
