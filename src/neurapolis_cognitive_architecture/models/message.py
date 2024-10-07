@@ -32,5 +32,9 @@ class Message:
             "role": self.role.value,
             "content": self.content,
             "date_filter": self.date_filter,
-            "files": None if self.files else [x_file.to_dto() for x_file in self.files],
+            "files": (
+                None
+                if self.files == None
+                else [x_file.to_dto() for x_file in self.files]
+            ),
         }
