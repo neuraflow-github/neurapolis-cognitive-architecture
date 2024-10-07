@@ -48,7 +48,7 @@ class NeurapolisCognitiveArchitecture:
                     ),
                 ],
             )
-            send_loader_update_to_client(loader_update)
+            await send_loader_update_to_client(loader_update)
         # Mock message with file info
         file_info = FileInfo(
             id="123",
@@ -74,5 +74,5 @@ class NeurapolisCognitiveArchitecture:
             None,
             [file_info],
         )
-        send_message_to_client(message)
+        await send_message_to_client(message)
         pass
