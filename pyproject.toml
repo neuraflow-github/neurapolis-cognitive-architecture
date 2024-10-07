@@ -1,10 +1,8 @@
 [tool.poetry]
 name = "neurapolis-cognitive-architecture"
-version = "0.1.0"
-description = "Example LangGraph project for deployment to LangGraph Cloud"
-authors = [
-    "langchain-ai"
-]
+version = "0.1.11"
+description = ""
+authors = ["Your Name <you@example.com>"]
 packages = [{ include = "neurapolis_cognitive_architecture", from = "src" }]
 
 [tool.poetry.dependencies]
@@ -16,6 +14,7 @@ langchain-community = "^0.3.0"
 python-dotenv = "^1.0.1"
 langchain-aws = "^0.2.0"
 langgraph-checkpoint = "^1.0.9"
+<<<<<<< HEAD
 langserve = "^0.3.0"
 fastapi = "^0.114.2"
 uvicorn = "^0.30.6"
@@ -24,7 +23,9 @@ pytz = "^2024.2"
 streamlit = "^1.38.0"
 streamlit-feedback = "^0.1.3"
 neurapolis-retriever = {path = "/Users/pascal/neurapolis-retriever", develop = true}
-
+=======
+neurapolis-retriever = {git = "https://github.com/neuraflow-github/neurapolis-retriever.git"}
+>>>>>>> f0eb81dd8619166bf94a2c988ef3fd15e4b76058
 
 
 [tool.poetry.group.dev.dependencies]
