@@ -43,8 +43,8 @@ class NeurapolisCognitiveArchitecture:
                 relevant_hit_count=i,
                 log_entries=[
                     TextLoaderLogEntry(
-                        id=str(uuid4()),
-                        message="Processing step " + str(i + 1),
+                        str(uuid4()),
+                        "Processing step " + str(i + 1),
                     ),
                 ],
             )
