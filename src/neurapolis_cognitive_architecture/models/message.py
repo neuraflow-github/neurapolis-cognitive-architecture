@@ -31,7 +31,7 @@ class Message:
             "id": self.id,
             "role": self.role.value,
             "content": self.content,
-            "date_filter": self.date_filter,
+            "date_filter": self.date_filter,  # HACK
             "files": (
                 None
                 if self.files == None
