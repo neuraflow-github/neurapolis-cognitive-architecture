@@ -1,15 +1,17 @@
+import datetime
+import json
 from functools import lru_cache
-from langchain_openai import AzureChatOpenAI
-from neurapolis_cognitive_architecture.utils.tools import tools
+from typing import List
+
+import pytz
 from langchain import hub
 from langchain_aws import ChatBedrock
-from langchain_core.runnables import RunnableLambda
-from typing import List
 from langchain_core.documents import Document
 from langchain_core.messages import ToolMessage
-import json
-import datetime
-import pytz
+from langchain_core.runnables import RunnableLambda
+from langchain_openai import AzureChatOpenAI
+
+from neurapolis_cognitive_architecture.utils.tools import tools
 
 
 def should_continue(state):
@@ -66,6 +68,8 @@ async def call_tool(state, config):
 
     def get_relevant_content(query):
         from neurapolis_retriever.graph import graph as graph_retriever
+
+        config["send_loader_update_to_client"](LoaderUpdate(status="loading"))
 
         results = graph_retriever.invoke({"query": query})
         searches = results.get("searches", [])
