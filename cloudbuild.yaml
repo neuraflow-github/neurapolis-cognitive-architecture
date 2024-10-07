@@ -8,7 +8,7 @@ steps:
       - "-f"
       - "Dockerfile-streamlit"
       - "--build-arg"
-      - "GITHUB_PAT=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"
+      - "GITHUB_PAT=${_GITHUB_PAT}"
       - "."
     id: "Build Container Image"
 
