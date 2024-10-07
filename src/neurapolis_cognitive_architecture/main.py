@@ -12,7 +12,7 @@ from neurapolis_cognitive_architecture.models.message import Message
 from neurapolis_cognitive_architecture.models.message_role import MessageRole
 
 
-class CognitiveArchitecture:
+class NeurapolisCognitiveArchitecture:
     async def query(
         self,
         query: str,
