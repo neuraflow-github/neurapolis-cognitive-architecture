@@ -24,6 +24,7 @@ class NeurapolisCognitiveArchitecture:
         send_message_to_client: Callable[[str], None],
     ):
 
+<<<<<<< HEAD
         from langchain_core.callbacks import BaseCallbackHandler
         from langchain_core.messages import HumanMessage
 
@@ -78,6 +79,41 @@ if __name__ == "__main__":
         neurapolis_cognitive_architecture = NeurapolisCognitiveArchitecture()
         await neurapolis_cognitive_architecture.query(
             thread_id, "Wann wurde der letzte Spielplatz erbaut??", None, None, None
+=======
+        # Mock loader updates
+        for i in range(5):
+            await asyncio.sleep(1)  # Simulate some processing time
+            loader_update = LoaderUpdate(
+                retriever_step=RetrieverStep.PLANNER,
+                search_count=i + 1,
+                hit_count=i * 2,
+                relevant_hit_count=i,
+                log_entries=[
+                    TextLoaderLogEntry(
+                        str(uuid4()),
+                        "Processing step " + str(i + 1),
+                    ),
+                ],
+            )
+            await send_loader_update_to_client(loader_update)
+        # Mock message with file info
+        file_info = FileInfo(
+            id="123",
+            name="example.pdf",
+            description="An example PDF file",
+            text="This is the content of the PDF file.",
+            created_at=datetime.now(),
+            pdf_url="https://ris.freiburg.de/documents.php?document_type_id=4&submission_id=1003006100000&id=69&inline=true",
+            highlight_areas=[
+                FileHighlightArea(
+                    page_index=0,
+                    left_percentage=10.0,
+                    top_percentage=20.0,
+                    width_percentage=30.0,
+                    height_percentage=5.0,
+                )
+            ],
+>>>>>>> dc47fb8d454c06d71f8263ddf54c656f50aa18b8
         )
 
     asyncio.run(main())

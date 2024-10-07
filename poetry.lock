@@ -2144,7 +2144,7 @@ resolved_reference = "b96b1eff7c3cb96bf6bec8f217b27a916118d244"
 
 [[package]]
 name = "neurapolis-retriever"
-version = "0.1.2"
+version = "0.1.3"
 description = ""
 optional = false
 python-versions = ">=3.12,<3.13"
@@ -2173,8 +2173,12 @@ url = "../neurapolis-retriever"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-retriever.git"
 reference = "HEAD"
+<<<<<<< HEAD
 resolved_reference = "9d437db83d50234ad448a14da51cf8f8ca688c61"
 >>>>>>> f0eb81dd8619166bf94a2c988ef3fd15e4b76058
+=======
+resolved_reference = "814f43660b59b5296c05f99dddb83ad3198536b8"
+>>>>>>> dc47fb8d454c06d71f8263ddf54c656f50aa18b8
 
 [[package]]
 name = "numpy"
