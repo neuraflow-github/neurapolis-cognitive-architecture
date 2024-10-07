@@ -36,7 +36,7 @@ class NeurapolisCognitiveArchitecture:
         for i in range(5):
             await asyncio.sleep(1)  # Simulate some processing time
             loader_update = LoaderUpdate(
-                retriever_step=RetrieverStep.SEARCHING,
+                retriever_step=RetrieverStep.PLANNER,
                 search_count=i + 1,
                 hit_count=i * 2,
                 relevant_hit_count=i,
