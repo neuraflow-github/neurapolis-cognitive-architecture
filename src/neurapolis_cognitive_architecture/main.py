@@ -21,48 +21,63 @@ class NeurapolisCognitiveArchitecture:
         query: str,
         date_filter: Optional[DateFilter],
         send_loader_update_to_client: Callable[[LoaderUpdate], None],
-        send_message_to_client: Callable[[Message], None],
+        send_message_to_client: Callable[[str], None],
     ):
-        from neurapolis_cognitive_architecture.agent import graph
 
-        state = {"messages": []}
-        config = {"thread_id": thread_id}
-
+        from langchain_core.callbacks import BaseCallbackHandler
         from langchain_core.messages import HumanMessage
 
-        state["messages"].append(HumanMessage(content=query))
+        from neurapolis_cognitive_architecture.agent import graph
 
+        state = {"messages": [HumanMessage(content=query)]}
         async for event in graph.astream(
             state,
             {
+                "configurable": {
+                    "thread_id": thread_id,
+                },
                 "send_loader_update_to_client": send_loader_update_to_client,
                 "send_message_to_client": send_message_to_client,
-                "thread_id": thread_id,
             },
+            subgraphs=True,
         ):
             print(event)
-            if isinstance(event, dict) and "agent" in event:
-                agent_messages = event["agent"].get("messages", [])
-                for msg in agent_messages:
-                    if hasattr(msg, "content") and msg.content:
-                        await send_message_to_client(
-                            Message(str(uuid4()), MessageRole.AI, msg.content, None, [])
+            if isinstance(event, tuple) and len(event) == 2:
+                action, data = event
+                for step, step_data in data.items():
+                    if step in RetrieverStep._member_names_:
+                        loader_update = LoaderUpdate(
+                            retriever_step=RetrieverStep(step),
+                            search_count=step_data.get("search_count", 0),
+                            hit_count=step_data.get("hit_count", 0),
+                            relevant_hit_count=step_data.get("relevant_hit_count", 0),
+                            log_entries=[
+                                TextLoaderLogEntry(
+                                    str(uuid4()),
+                                    f"Processing step {step}",
+                                ),
+                            ],
                         )
+                        print("\033[94mloader_update", loader_update, "\033[0m")
+                        await send_loader_update_to_client(loader_update)
+
+                        # else
+
+                        # ((), {'action': {'messages': [ToolMessage(content=[{'id': 'mock_id_1', 'name': 'Mock Document 1', 'description': 'This is a mock document about playgrounds.', 'text': 'The latest playground in our city was built in 2023.', 'created_at': '2024-03-15T10:00:00Z', 'pdf_url': 'https://example.com/mock_document_1.pdf', 'highlight_areas': []}, {'id': 'mock_id_2', 'name': 'Mock Document 2', 'description': 'Another mock document about city development.', 'text': 'City plans include building a new playground next year.', 'created_at': '2024-03-16T14:30:00Z', 'pdf_url': 'https://example.com/mock_document_2.pdf', 'highlight_areas': []}], name='search_docs', tool_call_id='toolu_bdrk_01CL6k3ELeZQxk2VbgPHaYvX')]}})
+
+        # Mock loader updates and message with file info code removed
 
 
 if __name__ == "__main__":
-    neurapolis_cognitive_architecture = NeurapolisCognitiveArchitecture()
-    thread_id = str(uuid4())
+    import asyncio
 
-    async def print_message(message: Message):
-        print(f"AI: {message.content}")
+    async def main():
+        import uuid
 
-    asyncio.run(
-        neurapolis_cognitive_architecture.query(
-            thread_id,
-            "Wann wurde der letzte Spielplatz erbaut?",
-            None,
-            print,
-            print_message,
+        thread_id = str(uuid.uuid4())
+        neurapolis_cognitive_architecture = NeurapolisCognitiveArchitecture()
+        await neurapolis_cognitive_architecture.query(
+            thread_id, "Wann wurde der letzte Spielplatz erbaut??", None, None, None
         )
-    )
+
+    asyncio.run(main())
