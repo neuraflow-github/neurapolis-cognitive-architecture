@@ -1,7 +1,8 @@
 import asyncio
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Optional
 
+from neurapolis_retriever.models.date_filter import DateFilter
 from neurapolis_retriever.models.file_highlight_area import FileHighlightArea
 from neurapolis_retriever.models.file_info import FileInfo
 from neurapolis_retriever.models.loader_log_entry import LoaderLogEntry
@@ -15,7 +16,9 @@ from neurapolis_cognitive_architecture.models.message_role import MessageRole
 class NeurapolisCognitiveArchitecture:
     async def query(
         self,
+        thread_id: str,
         query: str,
+        date_filter: Optional[DateFilter],
         send_loader_update_to_client: Callable[[LoaderUpdate], None],
         send_message_to_client: Callable[[str], None],
     ):
