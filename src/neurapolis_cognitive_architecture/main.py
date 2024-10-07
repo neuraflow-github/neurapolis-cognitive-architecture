@@ -1,13 +1,14 @@
 import asyncio
 from datetime import datetime
 from typing import Callable, Optional
+from uuid import uuid4
 
 from neurapolis_retriever.models.date_filter import DateFilter
 from neurapolis_retriever.models.file_highlight_area import FileHighlightArea
 from neurapolis_retriever.models.file_info import FileInfo
-from neurapolis_retriever.models.loader_log_entry import LoaderLogEntry
 from neurapolis_retriever.models.loader_update import LoaderUpdate
 from neurapolis_retriever.models.retriever_step import RetrieverStep
+from neurapolis_retriever.models.text_loader_log_entry import TextLoaderLogEntry
 
 from neurapolis_cognitive_architecture.models.message import Message
 from neurapolis_cognitive_architecture.models.message_role import MessageRole
@@ -41,7 +42,10 @@ class NeurapolisCognitiveArchitecture:
                 hit_count=i * 2,
                 relevant_hit_count=i,
                 log_entries=[
-                    LoaderLogEntry(message=f"Processing step {i + 1}", level="INFO")
+                    TextLoaderLogEntry(
+                        id=str(uuid4()),
+                        message="Processing step " + str(i + 1),
+                    ),
                 ],
             )
             send_loader_update_to_client(loader_update)
