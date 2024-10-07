@@ -68,10 +68,11 @@ class NeurapolisCognitiveArchitecture:
             ],
         )
         message = Message(
-            id="msg_123",
-            role=MessageRole.AI,
-            content="Here's the information you requested.",
-            files=[file_info],
+            "msg_123",
+            MessageRole.AI,
+            "Here's the information you requested.",
+            None,
+            [file_info],
         )
         send_message_to_client(message)
         pass
