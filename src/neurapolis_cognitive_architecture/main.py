@@ -23,56 +23,105 @@ class NeurapolisCognitiveArchitecture:
         send_loader_update_to_client: Callable[[LoaderUpdate], None],
         send_message_to_client: Callable[[str], None],
     ):
-        # graph.invoke(
-        #     {
-        #         "query": query,
-        #     },
-        #     {
-        #         "send_loader_update_to_client": send_loader_update_to_client,
-        #         "send_message_to_client": send_message_to_client,
-        #     },
-        # )
 
-        # Mock loader updates
-        for i in range(5):
-            await asyncio.sleep(1)  # Simulate some processing time
-            loader_update = LoaderUpdate(
-                retriever_step=RetrieverStep.PLANNER,
-                search_count=i + 1,
-                hit_count=i * 2,
-                relevant_hit_count=i,
-                log_entries=[
-                    TextLoaderLogEntry(
-                        str(uuid4()),
-                        "Processing step " + str(i + 1),
-                    ),
-                ],
-            )
-            await send_loader_update_to_client(loader_update)
-        # Mock message with file info
-        file_info = FileInfo(
-            id="123",
-            name="example.pdf",
-            description="An example PDF file",
-            text="This is the content of the PDF file.",
-            created_at=datetime.now(),
-            pdf_url="https://ris.freiburg.de/documents.php?document_type_id=4&submission_id=1003006100000&id=69&inline=true",
-            highlight_areas=[
-                FileHighlightArea(
-                    page_index=0,
-                    left_percentage=10.0,
-                    top_percentage=20.0,
-                    width_percentage=30.0,
-                    height_percentage=5.0,
-                )
-            ],
+        from langchain_core.callbacks import BaseCallbackHandler
+        from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+
+        from neurapolis_cognitive_architecture.agent import graph
+
+        state = {"messages": [HumanMessage(content=query)]}
+        previous_tool_call = None
+        async for event in graph.astream(
+            state,
+            {
+                "configurable": {
+                    "thread_id": thread_id,
+                },
+                "send_loader_update_to_client": send_loader_update_to_client,
+                "send_message_to_client": send_message_to_client,
+            },
+            subgraphs=True,
+        ):
+            # print(event)
+
+            if isinstance(event, tuple) and len(event) == 2:
+                action, data = event
+                for step, step_data in data.items():
+                    if step in RetrieverStep._member_names_:
+                        loader_update = LoaderUpdate(
+                            retriever_step=RetrieverStep(step),
+                            search_count=step_data.get("search_count", 0),
+                            hit_count=step_data.get("hit_count", 0),
+                            relevant_hit_count=step_data.get("relevant_hit_count", 0),
+                            log_entries=[
+                                TextLoaderLogEntry(
+                                    str(uuid4()),
+                                    f"Processing step {step}",
+                                ),
+                            ],
+                        )
+                        print("\033[94mloader_update", loader_update, "\033[0m")
+                        await send_loader_update_to_client(loader_update)
+                    else:
+                        if (
+                            isinstance(data, dict)
+                            and "agent" in data
+                            and "messages" in data["agent"]
+                            and isinstance(data["agent"]["messages"], list)
+                            and len(data["agent"]["messages"]) > 0
+                            and isinstance(data["agent"]["messages"][0], AIMessage)
+                            and not data["agent"]["messages"][0].tool_calls
+                        ):
+                            ai_message = data["agent"]["messages"][0]
+                            content = ai_message.content
+
+                            if previous_tool_call is not None:
+                                file_infos = [
+                                    FileInfo(
+                                        id=item["id"],
+                                        name=item["name"],
+                                        description=item["description"],
+                                        text=item["text"],
+                                        # TODO: parse created_at
+                                        created_at=datetime.now(),
+                                        pdf_url=item["pdf_url"],
+                                        highlight_areas=[],
+                                    )
+                                    for item in previous_tool_call.content
+                                ]
+                            else:
+                                file_infos = []
+
+                            message = Message(
+                                "msg_" + str(uuid4()),
+                                MessageRole.AI,
+                                content,
+                                None,
+                                file_infos,
+                            )
+                            await send_message_to_client(message)
+                            previous_tool_call = None
+                        elif (
+                            isinstance(data, dict)
+                            and "action" in data
+                            and "messages" in data["action"]
+                            and isinstance(data["action"]["messages"], list)
+                            and len(data["action"]["messages"]) > 0
+                            and isinstance(data["action"]["messages"][0], ToolMessage)
+                        ):
+                            previous_tool_call = data["action"]["messages"][0]
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        import uuid
+
+        thread_id = str(uuid.uuid4())
+        neurapolis_cognitive_architecture = NeurapolisCognitiveArchitecture()
+        await neurapolis_cognitive_architecture.query(
+            thread_id, "Wann wurde der letzte Spielplatz erbaut??", None, None, None
         )
-        message = Message(
-            "msg_123",
-            MessageRole.AI,
-            "Here's the information you requested.",
-            None,
-            [file_info],
-        )
-        await send_message_to_client(message)
-        pass
+
+    asyncio.run(main())

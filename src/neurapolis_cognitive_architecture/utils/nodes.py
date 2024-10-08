@@ -20,6 +20,9 @@ def should_continue(state):
     return "continue" if last_message.tool_calls else "end"
 
 
+from pydantic import BaseModel
+
+
 async def call_model(state, config):
     messages = state["messages"]
 
@@ -37,51 +40,75 @@ async def call_model(state, config):
 
 
 async def call_tool(state, config):
+    # print("config", config)
     last_message = state["messages"][-1]
     tool_call = last_message.tool_calls[0]
     query = tool_call["args"]["full_query"]
 
-    def extract_relevant_file_info(searches):
-        relevant_files = []
+    async def get_file_infos(query):
+        from neurapolis_retriever.graph import graph
+        from neurapolis_retriever.models.file_info import FileInfo
+        from neurapolis_retriever.state.state import State
+        from neurapolis_retriever.retriever_config import retriever_config
 
-        for search in searches:
-            hits = search.hits if hasattr(search, "hits") else []
-            for hit in hits:
-                if (
-                    hasattr(hit, "grading")
-                    and hit.grading is not None
-                    and getattr(hit.grading, "is_relevant", False)
-                ):
-                    if hasattr(hit, "related_file") and hit.related_file is not None:
-                        file_info = {
-                            "name": hit.related_file.name,
-                            "access_url": hit.related_file.access_url,
-                            "extracted_text": (
-                                hit.related_file.extracted_text
-                                if hasattr(hit.related_file, "extracted_text")
-                                else None
-                            ),
-                        }
-                        relevant_files.append(file_info)
+        retriever_config.planner_vector_search_limit = 1
+        retriever_config.planner_keyword_search_limit = 1
+        retriever_config.planner_min_relevant_hit_count = 1
+        retriever_config.planner_max_search_count = 1
+        retriever_config.sub_planner_keyword_search_limit = 1
+        retriever_config.sub_planner_relevant_hits_limit = 1
+        retriever_config.initial_retriever_vector_search_top_k = 30
+        retriever_config.reranked_retriever_vector_search_top_k = 5
+        retriever_config.initial_retriever_keyword_search_top_k = 30
+        retriever_config.reranked_retriever_keyword_search_top_k = 5
 
-        return relevant_files
+        file_infos = []
 
-    def get_relevant_content(query):
-        from neurapolis_retriever.graph import graph as graph_retriever
+        async for x_event in graph.astream_events(State(query=query), version="v1"):
+            if isinstance(x_event, dict) and x_event.get("event") == "on_chain_end":
+                # print("x_event", x_event)
+                event_name = x_event.get("name")
+                print("event_name", event_name)
+                from neurapolis_retriever.models.retriever_step import RetrieverStep
 
-        config["send_loader_update_to_client"](LoaderUpdate(status="loading"))
+                if event_name == RetrieverStep.FINISHER.value:
+                    state = x_event.get("data", {}).get("output")
 
-        results = graph_retriever.invoke({"query": query})
-        searches = results.get("searches", [])
-        relevant_files = extract_relevant_file_info(searches)
-        return relevant_files
+                    if state:
+                        for x_search in state.searches:
+                            for x_hit in x_search.hits:
+                                if x_hit.grading.is_relevant:
+                                    file_info = FileInfo(
+                                        id=x_hit.related_file.id,
+                                        name=x_hit.related_file.name,
+                                        description=x_hit.grading.description,
+                                        text=x_hit.text,
+                                        created_at=x_hit.related_file.created,
+                                        pdf_url=x_hit.related_file.download_url,
+                                        highlight_areas=[],
+                                    )
+                                    file_infos.append(file_info)
+                                    if len(file_infos) >= 20:
+                                        break
+                            if len(file_infos) >= 20:
+                                break
+                    break
 
-    relevant_content = get_relevant_content(query)
+        return file_infos
+
+    file_infos = await get_file_infos(query)
+
+    # Serialize file_infos before adding to the content
+    serialized_file_infos = [file_info.model_dump() for file_info in file_infos]
+
+    # print("\033[94m" + str(content) + "\033[0m")
 
     function_message = ToolMessage(
-        content=str(relevant_content),
+        content=serialized_file_infos,
         name=tool_call["name"],
         tool_call_id=tool_call["id"],
     )
+
+    print("function_message", function_message)
 
     return {"messages": [function_message]}
