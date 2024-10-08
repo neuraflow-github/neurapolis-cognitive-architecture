@@ -25,11 +25,12 @@ class NeurapolisCognitiveArchitecture:
     ):
 
         from langchain_core.callbacks import BaseCallbackHandler
-        from langchain_core.messages import HumanMessage
+        from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 
         from neurapolis_cognitive_architecture.agent import graph
 
         state = {"messages": [HumanMessage(content=query)]}
+        previous_tool_call = None
         async for event in graph.astream(
             state,
             {
@@ -41,33 +42,7 @@ class NeurapolisCognitiveArchitecture:
             },
             subgraphs=True,
         ):
-            print(event)
-            # file_info = FileInfo(
-            #     id="123",
-            #     name="example.pdf",
-            #     description="An example PNG file",
-            #     text="This is the content of the PDF file.",
-            #     created_at=datetime.now(),
-            #     pdf_url="https://example.com/example.pdf",
-            #     highlight_areas=[
-            #         FileHighlightArea(
-            #             page_index=0,
-            #             left_percentage=10.0,
-            #             top_percentage=20.0,
-            #             width_percentage=30.0,
-            #             height_percentage=5.0,
-            #         )
-            #     ],
-            # )
-            # message = Message(
-            #     "msg_123",
-            #     MessageRole.AI,
-            #     "Here's the information you requested.",
-            #     None,
-            #     [file_info],
-            # )
-            # await send_message_to_client(message)
-            # break
+            # print(event)
 
             if isinstance(event, tuple) and len(event) == 2:
                 action, data = event
@@ -88,10 +63,45 @@ class NeurapolisCognitiveArchitecture:
                         print("\033[94mloader_update", loader_update, "\033[0m")
                         await send_loader_update_to_client(loader_update)
                     else:
-                        # Check if the event matches the expected format
-                        from langchain_core.messages import ToolMessage
-
                         if (
+                            isinstance(data, dict)
+                            and "agent" in data
+                            and "messages" in data["agent"]
+                            and isinstance(data["agent"]["messages"], list)
+                            and len(data["agent"]["messages"]) > 0
+                            and isinstance(data["agent"]["messages"][0], AIMessage)
+                            and not data["agent"]["messages"][0].tool_calls
+                        ):
+                            ai_message = data["agent"]["messages"][0]
+                            content = ai_message.content
+
+                            if previous_tool_call is not None:
+                                file_infos = [
+                                    FileInfo(
+                                        id=item["id"],
+                                        name=item["name"],
+                                        description=item["description"],
+                                        text=item["text"],
+                                        # TODO: parse created_at
+                                        created_at=datetime.now(),
+                                        pdf_url=item["pdf_url"],
+                                        highlight_areas=[],
+                                    )
+                                    for item in previous_tool_call.content
+                                ]
+                            else:
+                                file_infos = []
+
+                            message = Message(
+                                "msg_" + str(uuid4()),
+                                MessageRole.AI,
+                                content,
+                                None,
+                                file_infos,
+                            )
+                            await send_message_to_client(message)
+                            previous_tool_call = None
+                        elif (
                             isinstance(data, dict)
                             and "action" in data
                             and "messages" in data["action"]
@@ -99,34 +109,7 @@ class NeurapolisCognitiveArchitecture:
                             and len(data["action"]["messages"]) > 0
                             and isinstance(data["action"]["messages"][0], ToolMessage)
                         ):
-                            tool_message = data["action"]["messages"][0]
-                            content = tool_message.content
-
-                            # Create FileInfo objects from the content
-                            file_infos = [
-                                FileInfo(
-                                    id=item["id"],
-                                    name=item["name"],
-                                    description=item["description"],
-                                    text=item["text"],
-                                    created_at=datetime.fromisoformat(
-                                        item["created_at"].rstrip("Z")
-                                    ),
-                                    pdf_url=item["pdf_url"],
-                                    highlight_areas=[],  # Assuming no highlight areas for now
-                                )
-                                for item in content
-                            ]
-
-                            # Create and send the message
-                            message = Message(
-                                "msg_" + str(uuid4()),
-                                MessageRole.AI,
-                                "Here's the information you requested.",
-                                None,
-                                file_infos,
-                            )
-                            await send_message_to_client(message)
+                            previous_tool_call = data["action"]["messages"][0]
 
 
 if __name__ == "__main__":

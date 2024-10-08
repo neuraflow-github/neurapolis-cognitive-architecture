@@ -20,6 +20,9 @@ def should_continue(state):
     return "continue" if last_message.tool_calls else "end"
 
 
+from pydantic import BaseModel
+
+
 async def call_model(state, config):
     messages = state["messages"]
 
@@ -42,13 +45,10 @@ async def call_tool(state, config):
     tool_call = last_message.tool_calls[0]
     query = tool_call["args"]["full_query"]
 
-    async def get_relevant_content(query):
+    async def get_file_infos(query):
         from neurapolis_retriever.graph import graph
-        from neurapolis_retriever.models.loader_update import LoaderUpdate
+        from neurapolis_retriever.models.file_info import FileInfo
         from neurapolis_retriever.state.state import State
-
-        file_infos = []
-
         from neurapolis_retriever.retriever_config import retriever_config
 
         retriever_config.planner_vector_search_limit = 1
@@ -57,54 +57,58 @@ async def call_tool(state, config):
         retriever_config.planner_max_search_count = 1
         retriever_config.sub_planner_keyword_search_limit = 1
         retriever_config.sub_planner_relevant_hits_limit = 1
+        retriever_config.initial_retriever_vector_search_top_k = 30
+        retriever_config.reranked_retriever_vector_search_top_k = 5
+        retriever_config.initial_retriever_keyword_search_top_k = 30
+        retriever_config.reranked_retriever_keyword_search_top_k = 5
+
+        file_infos = []
 
         async for x_event in graph.astream_events(State(query=query), version="v1"):
-            pass
-            # if isinstance(x_event, dict) and x_event.get("event") == "on_chain_end":
-            #     state_data = x_event.get("data", {}).get("output")
-            #     if state_data and isinstance(state_data, dict):
-            #         state = State(**state_data)
-            #         loader_update = LoaderUpdate(
-            #             retriever_step=state.retriever_step,
-            #             search_count=state.search_count,
-            #             hit_count=state.hit_count,
-            #             relevant_hit_count=state.relevant_hit_count,
-            #             log_entries=[],
-            #         )
-            #         config["send_loader_update_to_client"](loader_update)
+            if isinstance(x_event, dict) and x_event.get("event") == "on_chain_end":
+                # print("x_event", x_event)
+                event_name = x_event.get("name")
+                print("event_name", event_name)
+                from neurapolis_retriever.models.retriever_step import RetrieverStep
 
-        # Mock file inputs for testing purposes
-        file_infos = [
-            {
-                "id": "mock_id_1",
-                "name": "Mock Document 1",
-                "description": "This is a mock document about playgrounds.",
-                "text": "The latest playground in our city was built in 2023.",
-                "created_at": "2024-03-15T10:00:00Z",
-                "pdf_url": "https://example.com/mock_document_1.pdf",
-                "highlight_areas": [],
-            },
-            {
-                "id": "mock_id_2",
-                "name": "Mock Document 2",
-                "description": "Another mock document about city development.",
-                "text": "City plans include building a new playground next year.",
-                "created_at": "2024-03-16T14:30:00Z",
-                "pdf_url": "https://example.com/mock_document_2.pdf",
-                "highlight_areas": [],
-            },
-        ]
+                if event_name == RetrieverStep.FINISHER.value:
+                    state = x_event.get("data", {}).get("output")
+
+                    if state:
+                        for x_search in state.searches:
+                            for x_hit in x_search.hits:
+                                if x_hit.grading.is_relevant:
+                                    file_info = FileInfo(
+                                        id=x_hit.related_file.id,
+                                        name=x_hit.related_file.name,
+                                        description=x_hit.grading.description,
+                                        text=x_hit.text,
+                                        created_at=x_hit.related_file.created,
+                                        pdf_url=x_hit.related_file.download_url,
+                                        highlight_areas=[],
+                                    )
+                                    file_infos.append(file_info)
+                                    if len(file_infos) >= 20:
+                                        break
+                            if len(file_infos) >= 20:
+                                break
+                    break
 
         return file_infos
 
-    relevant_content = await get_relevant_content(query)
+    file_infos = await get_file_infos(query)
 
-    print("\033[94m" + str(relevant_content) + "\033[0m")
+    # Serialize file_infos before adding to the content
+    serialized_file_infos = [file_info.model_dump() for file_info in file_infos]
+
+    # print("\033[94m" + str(content) + "\033[0m")
 
     function_message = ToolMessage(
-        content=relevant_content,
+        content=serialized_file_infos,
         name=tool_call["name"],
         tool_call_id=tool_call["id"],
     )
+
+    print("function_message", function_message)
 
     return {"messages": [function_message]}
