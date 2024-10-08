@@ -28,8 +28,13 @@ class NeurapolisCognitiveArchitecture:
         from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 
         from neurapolis_cognitive_architecture.agent import graph
+        from neurapolis_cognitive_architecture.utils.state import FilteredBaseMessage
 
-        state = {"messages": [HumanMessage(content=query)]}
+        date_filter = DateFilter(start_at=datetime.now(), end_at=datetime.now())
+
+        state = {
+            "messages": [FilteredBaseMessage(content=query, date_filter=date_filter)]
+        }
         previous_tool_call = None
         async for event in graph.astream(
             state,

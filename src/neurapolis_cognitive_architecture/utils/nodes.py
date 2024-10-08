@@ -40,8 +40,15 @@ async def call_model(state, config):
 
 
 async def call_tool(state, config):
-    # print("config", config)
+    print("\033[94mconfig", config, "\033[0m")
     last_message = state["messages"][-1]
+    from neurapolis_cognitive_architecture.utils.state import FilteredBaseMessage
+    from typing import cast
+
+    last_human_message = cast(
+        FilteredBaseMessage,
+        next((msg for msg in reversed(state["messages"]) if msg.type == "human"), None),
+    )
     tool_call = last_message.tool_calls[0]
     query = tool_call["args"]["full_query"]
 
@@ -64,7 +71,11 @@ async def call_tool(state, config):
 
         file_infos = []
 
-        async for x_event in graph.astream_events(State(query=query), version="v1"):
+        print("\033[94mdate_filter", last_human_message.date_filter, "\033[0m")
+
+        async for x_event in graph.astream_events(
+            State(query=query, date_filter=last_human_message), version="v1"
+        ):
             if isinstance(x_event, dict) and x_event.get("event") == "on_chain_end":
                 # print("x_event", x_event)
                 event_name = x_event.get("name")
