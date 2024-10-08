@@ -42,6 +42,33 @@ class NeurapolisCognitiveArchitecture:
             subgraphs=True,
         ):
             print(event)
+            # file_info = FileInfo(
+            #     id="123",
+            #     name="example.pdf",
+            #     description="An example PNG file",
+            #     text="This is the content of the PDF file.",
+            #     created_at=datetime.now(),
+            #     pdf_url="https://example.com/example.pdf",
+            #     highlight_areas=[
+            #         FileHighlightArea(
+            #             page_index=0,
+            #             left_percentage=10.0,
+            #             top_percentage=20.0,
+            #             width_percentage=30.0,
+            #             height_percentage=5.0,
+            #         )
+            #     ],
+            # )
+            # message = Message(
+            #     "msg_123",
+            #     MessageRole.AI,
+            #     "Here's the information you requested.",
+            #     None,
+            #     [file_info],
+            # )
+            # await send_message_to_client(message)
+            # break
+
             if isinstance(event, tuple) and len(event) == 2:
                 action, data = event
                 for step, step_data in data.items():
@@ -60,12 +87,46 @@ class NeurapolisCognitiveArchitecture:
                         )
                         print("\033[94mloader_update", loader_update, "\033[0m")
                         await send_loader_update_to_client(loader_update)
+                    else:
+                        # Check if the event matches the expected format
+                        from langchain_core.messages import ToolMessage
 
-                        # else
+                        if (
+                            isinstance(data, dict)
+                            and "action" in data
+                            and "messages" in data["action"]
+                            and isinstance(data["action"]["messages"], list)
+                            and len(data["action"]["messages"]) > 0
+                            and isinstance(data["action"]["messages"][0], ToolMessage)
+                        ):
+                            tool_message = data["action"]["messages"][0]
+                            content = tool_message.content
 
-                        # ((), {'action': {'messages': [ToolMessage(content=[{'id': 'mock_id_1', 'name': 'Mock Document 1', 'description': 'This is a mock document about playgrounds.', 'text': 'The latest playground in our city was built in 2023.', 'created_at': '2024-03-15T10:00:00Z', 'pdf_url': 'https://example.com/mock_document_1.pdf', 'highlight_areas': []}, {'id': 'mock_id_2', 'name': 'Mock Document 2', 'description': 'Another mock document about city development.', 'text': 'City plans include building a new playground next year.', 'created_at': '2024-03-16T14:30:00Z', 'pdf_url': 'https://example.com/mock_document_2.pdf', 'highlight_areas': []}], name='search_docs', tool_call_id='toolu_bdrk_01CL6k3ELeZQxk2VbgPHaYvX')]}})
+                            # Create FileInfo objects from the content
+                            file_infos = [
+                                FileInfo(
+                                    id=item["id"],
+                                    name=item["name"],
+                                    description=item["description"],
+                                    text=item["text"],
+                                    created_at=datetime.fromisoformat(
+                                        item["created_at"].rstrip("Z")
+                                    ),
+                                    pdf_url=item["pdf_url"],
+                                    highlight_areas=[],  # Assuming no highlight areas for now
+                                )
+                                for item in content
+                            ]
 
-        # Mock loader updates and message with file info code removed
+                            # Create and send the message
+                            message = Message(
+                                "msg_" + str(uuid4()),
+                                MessageRole.AI,
+                                "Here's the information you requested.",
+                                None,
+                                file_infos,
+                            )
+                            await send_message_to_client(message)
 
 
 if __name__ == "__main__":
