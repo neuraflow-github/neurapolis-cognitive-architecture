@@ -17,7 +17,7 @@ load_dotenv()
 
 class RetrieverInput(BaseModel):
     full_query: str = Field(
-        description="""When using search_docs, create a complete sentence that captures the user's request in the context of a city council's Retrieval Augmented Generation system. Use the same language as the input. Examples:
+        description="""When using get_information, create a complete sentence that captures the user's request in the context of a city council's Retrieval Augmented Generation system. Use the same language as the input. Examples:
 
 "What are the current waste management policies in the city?"
 "How can residents participate in the next city council meeting?"
@@ -38,10 +38,31 @@ Example with additional information:
 
 
 class CustomRetrieverTool(BaseTool):
-    name: str = "search_docs"
-    description: str = (
-        """Searches and returns documents from relevant city council sources. This tool is crucial for answering any factual questions about local governance, city policies, public services, or verifying details within the given context of the city council. Always use this tool when asked about specific ordinances, city projects, public meetings, or facts related to local government operations, even if you think you might know the answer."""
-    )
+    name: str = "get_information"
+    description: str = """
+    Searches and retrieves information from official council documents of the city of Freiburg.
+
+    Always use this tool when asked about specific entities, names,
+    places, or facts related to Freiburg's council matters,
+    even if you think you might know the answer.
+
+    Before using this tool, inform the user empathetically by partially
+    repeating the theme of the query. For example:
+
+    Query: "Current events in Freiburg"
+    Reply: "I'd be glad to help you discover what's happening in Freiburg. Let me search the latest council documents for current events."
+
+    Query: "What's the status of bicycle path planning?"
+    Reply: "Bicycle infrastructure is an important topic for Freiburg. I'll check the recent council documents for the latest updates on bicycle path planning."
+
+    Apply this empathetic and informative approach across all queries,
+    tailoring your response to show understanding of the user's needs
+    before retrieving information from the council documents.
+
+    Remember to use only information from official Freiburg council documents,
+    and if unsure or needing additional details, always use this integrated lookup tool.
+    Never invent or hallucinate information, and use these capabilities solely for
+    providing information about Freiburg council matters."""
     args_schema: Type[BaseModel] = RetrieverInput
     return_direct: bool = True
 

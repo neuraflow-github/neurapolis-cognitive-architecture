@@ -24,6 +24,8 @@ class NeurapolisCognitiveArchitecture:
         send_message_to_client: Callable[[str], None],
     ):
 
+        # print("thread_id", thread_id)
+
         from langchain_core.callbacks import BaseCallbackHandler
         from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 
