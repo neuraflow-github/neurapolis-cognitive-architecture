@@ -32,8 +32,6 @@ class NeurapolisCognitiveArchitecture:
         from neurapolis_cognitive_architecture.agent import graph
         from neurapolis_cognitive_architecture.utils.state import FilteredBaseMessage
 
-        date_filter = DateFilter(start_at=datetime.now(), end_at=datetime.now())
-
         state = {
             "messages": [FilteredBaseMessage(content=query, date_filter=date_filter)]
         }
