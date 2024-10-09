@@ -89,10 +89,7 @@ async def call_tool(state, config):
             async for x_event in graph.astream_events(
                 State(
                     query=query,
-                    date_filter=DateFilter(
-                        start_at=datetime.now(),
-                        end_at=datetime.now(),
-                    ),
+                    date_filter=last_human_message.date_filter,
                 ),
                 include_names=retriever_step_values,
                 include_types=["on_chain_start", "on_chain_end"],
