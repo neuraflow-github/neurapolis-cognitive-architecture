@@ -5,7 +5,7 @@ from neurapolis_common.models.dto import Dto
 from .message_role import MessageRole
 
 
-class Message(ABC, Dto["Message"]):
+class Message(Dto["Message"], ABC):
     id: str
     role: MessageRole
     content: str
