@@ -28,7 +28,8 @@ class NeurapolisCognitiveArchitecture:
         # print("thread_id", thread_id)
 
         from langchain_core.callbacks import BaseCallbackHandler
-        from langchain_core.messages import HumanMessage, LcAIMessage, ToolMessage
+        from langchain_core.messages import AIMessage as LcAIMessage
+        from langchain_core.messages import HumanMessage, ToolMessage
 
         from neurapolis_cognitive_architecture.agent import graph
         from neurapolis_cognitive_architecture.utils.state import FilteredBaseMessage
