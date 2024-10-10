@@ -7,16 +7,15 @@ from .message_role import MessageRole
 
 
 class UserMessage(Message):
-    date_filter: Optional[dict] = None
+    date_filter: Optional[dict]
+    quality_preset: str
 
     def __init__(
-        self,
-        id: str,
-        content: str,
-        date_filter: Optional[dict] = None,
+        self, id: str, content: str, date_filter: Optional[dict], quality_preset: str
     ):
         super().__init__(id, MessageRole.USER, content)
         self.date_filter = date_filter
+        self.quality_preset = quality_preset
 
     def to_dto(self):
         raise Exception("NOT_IMPLEMENTED")
@@ -31,4 +30,5 @@ class UserMessage(Message):
                 if user_message_dto["date_filter"] is None
                 else DateFilter.from_dto(user_message_dto["date_filter"])
             ),
+            quality_preset=user_message_dto["quality_preset"],
         )
