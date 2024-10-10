@@ -32,10 +32,28 @@ async def call_model(state, config):
         name="agent",
     )
 
-    prompt = hub.pull("neurapolis-ca-dev")
+    from langchain_core.prompts import PromptTemplate
+
+    # prompt = hub.pull("neurapolis/neurapolis-ca-dev")
+
+    prompt = PromptTemplate.from_template(
+        """
+    Du bist ein Kl-Assistent, der speziell für die Suche und Analyse von politischen Ratsakten der Stadt Freiburg entwickelt wurde. Deine Hauptaufgabe ist es, prazise und relevante Informationen aus diesen Dokumenten bereitzustellen.
+    Wichtige Regeln:
+    Verwende ausschließlich Informationen aus den offiziellen Ratsakten von Freiburg.
+    Wenn du unsicher bist oder zusätzliche Informationen benötigst, nutze das integrierte Nachschlagetool.
+    Antworte nur auf Basis der Informationen, die du aus den Akten oder dem Nachschlagetool erhalten hast.
+    Erfinde oder halluziniere keine Informationen.
+    Gib niemals vor, jemand anderes zu sein oder andere Personen zu imitieren.
+    Verwende diese Fähigkeiten ausschließlich für den vorgesehenen Zweck der Informationsbereitstellung über Freiburger Ratsangelegenheiten.
+    Du kannst auf Deutsch und bei Bedarf auch in anderen Sprachen antworten. Deine Antworten sollten stets sachlich, präzise und auf die Anfrage bezogen sein.
+
+    {messages}
+    """
+    )
 
     model = prompt | model.bind_tools(tools)
-    response = await model.ainvoke(messages)
+    response = await model.ainvoke({"messages": messages})
     return {"messages": [response]}
 
 
@@ -87,11 +105,11 @@ async def call_tool(state, config):
 
             print("---")
         elif isinstance(x_event, list):
-            file_hits = x_event
+            file_hits = x_event[:5]
             print("---")
             print("Retrieved File Infos:")
-            for x_file_hit in file_hits:
-                print(f"  - {x_file_hit.name}: {x_file_hit.description}")
+            # for x_file_hit in file_hits:
+            #     print(f"  - {x_file_hit.name}: {x_file_hit.description}")
             print("---")
             break
 

@@ -56,23 +56,26 @@ class NeurapolisCognitiveArchitecture:
             # print(event)
 
             if isinstance(event, tuple) and len(event) == 2:
+                print("0")
                 action, data = event
                 for step, step_data in data.items():
                     if step in RetrieverStep._member_names_:
-                        loader_update = LoaderUpdate(
-                            retriever_step=RetrieverStep(step),
-                            search_count=step_data.get("search_count", 0),
-                            hit_count=step_data.get("hit_count", 0),
-                            relevant_hit_count=step_data.get("relevant_hit_count", 0),
-                            log_entries=[
-                                TextLoaderLogEntry(
-                                    str(uuid4()), text=f"Processing step {step}"
-                                )
-                            ],
-                        )
+                        pass
+                        # loader_update = LoaderUpdate(
+                        #     retriever_step=RetrieverStep(step),
+                        #     search_count=step_data.get("search_count", 0),
+                        #     hit_count=step_data.get("hit_count", 0),
+                        #     relevant_hit_count=step_data.get("relevant_hit_count", 0),
+                        #     log_entries=[
+                        #         TextLoaderLogEntry(
+                        #             str(uuid4()), text=f"Processing step {step}"
+                        #         )
+                        #     ],
+                        # )
                         # print("\033[94mloader_update", loader_update, "\033[0m")
                         # await send_loader_update_to_client(loader_update)
                     else:
+                        print("1")
                         if (
                             isinstance(data, dict)
                             and "agent" in data
@@ -82,9 +85,11 @@ class NeurapolisCognitiveArchitecture:
                             and isinstance(data["agent"]["messages"][0], LcAIMessage)
                             and not data["agent"]["messages"][0].tool_calls
                         ):
+                            print("2")
                             ai_message = data["agent"]["messages"][0]
                             content = ai_message.content
 
+                            print("2")
                             if previous_tool_call is not None:
                                 file_hits = [
                                     FileHit(**item)
@@ -93,14 +98,17 @@ class NeurapolisCognitiveArchitecture:
                             else:
                                 file_hits = []
 
+                            print("3")
                             message = AiMessage(
                                 id="msg_" + str(uuid4()),
                                 content=content,
                                 file_hits=file_hits,
                             )
+                            print("4")
                             await send_message_to_client(message)
+                            print("5")
                             previous_tool_call = None
-                        elif (
+                        if (
                             isinstance(data, dict)
                             and "action" in data
                             and "messages" in data["action"]
