@@ -47,9 +47,9 @@ class NeurapolisCognitiveArchitecture:
             {
                 "configurable": {
                     "thread_id": thread_id,
+                    "send_loader_update_to_client": send_loader_update_to_client,
+                    "send_message_to_client": send_message_to_client,
                 },
-                "send_loader_update_to_client": send_loader_update_to_client,
-                "send_message_to_client": send_message_to_client,
             },
             subgraphs=True,
         ):
@@ -66,13 +66,12 @@ class NeurapolisCognitiveArchitecture:
                             relevant_hit_count=step_data.get("relevant_hit_count", 0),
                             log_entries=[
                                 TextLoaderLogEntry(
-                                    str(uuid4()),
-                                    f"Processing step {step}",
-                                ),
+                                    str(uuid4()), text=f"Processing step {step}"
+                                )
                             ],
                         )
-                        print("\033[94mloader_update", loader_update, "\033[0m")
-                        await send_loader_update_to_client(loader_update)
+                        # print("\033[94mloader_update", loader_update, "\033[0m")
+                        # await send_loader_update_to_client(loader_update)
                     else:
                         if (
                             isinstance(data, dict)
@@ -88,25 +87,16 @@ class NeurapolisCognitiveArchitecture:
 
                             if previous_tool_call is not None:
                                 file_hits = [
-                                    FileHit(
-                                        id=item["id"],
-                                        name=item["name"],
-                                        description=item["description"],
-                                        text=item["text"],
-                                        # TODO: parse created_at
-                                        created_at=datetime.now(),
-                                        pdf_url=item["pdf_url"],
-                                        highlight_areas=[],
-                                    )
+                                    FileHit(**item)
                                     for item in previous_tool_call.content
                                 ]
                             else:
                                 file_hits = []
 
                             message = AiMessage(
-                                "msg_" + str(uuid4()),
-                                content,
-                                file_hits,
+                                id="msg_" + str(uuid4()),
+                                content=content,
+                                file_hits=file_hits,
                             )
                             await send_message_to_client(message)
                             previous_tool_call = None

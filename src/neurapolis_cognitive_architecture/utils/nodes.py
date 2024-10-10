@@ -40,7 +40,12 @@ async def call_model(state, config):
 
 
 async def call_tool(state, config):
-    print("\033[94mconfig", config, "\033[0m")
+
+    print(
+        "\033[94mconfig",
+        config["configurable"]["send_loader_update_to_client"],
+        "\033[0m",
+    )
     last_message = state["messages"][-1]
     from typing import cast
 
@@ -76,8 +81,10 @@ async def call_tool(state, config):
             print(f"Hit Count: {loader_update.hit_count}")
             print(f"Relevant Hit Count: {loader_update.relevant_hit_count}")
             print("Log Entries:")
+            await config["configurable"]["send_loader_update_to_client"](loader_update)
             for x_log_entry in loader_update.log_entries:
                 print(f"  - {x_log_entry.text}")
+
             print("---")
         elif isinstance(x_event, list):
             file_hits = x_event

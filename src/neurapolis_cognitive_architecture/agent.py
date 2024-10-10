@@ -19,7 +19,7 @@ class GraphConfig(TypedDict):
 
 
 # Define a new graph
-workflow = StateGraph(AgentState, config_schema=GraphConfig)
+workflow = StateGraph(AgentState)
 
 # Define the two nodes we will cycle between
 workflow.add_node("agent", call_model)
