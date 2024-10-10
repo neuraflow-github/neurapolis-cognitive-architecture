@@ -1,0 +1,55 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Neurapolis API and Start Development App",
+            "dependsOn": [
+                "Run Neurapolis API",
+                "Start Development App"
+            ],
+            "dependsOrder": "parallel",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Neurapolis API",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "python",
+                "/Users/pascal/neurapolis-api/src/neurapolis_api/main.py"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "options": {
+                "cwd": "/Users/pascal/neurapolis-api"
+            }
+        },
+        {
+            "label": "Start Development App",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "start-development"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "options": {
+                "cwd": "/Users/pascal/neurapolis-app"
+            }
+        }
+    ]
+}
