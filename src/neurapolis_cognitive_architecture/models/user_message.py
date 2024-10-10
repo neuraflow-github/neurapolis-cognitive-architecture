@@ -27,7 +27,7 @@ class UserMessage(Message):
             content=user_message_dto["content"],
             date_filter=(
                 None
-                if user_message_dto["date_filter"] is None
+                if user_message_dto.get("date_filter") is None
                 else DateFilter.from_dto(user_message_dto["date_filter"])
             ),
             quality_preset=user_message_dto["quality_preset"],
