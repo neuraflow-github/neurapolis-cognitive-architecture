@@ -1820,7 +1820,7 @@ rich = "^13.8.1"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-retriever.git"
 reference = "HEAD"
-resolved_reference = "8af6068f61e7f619d1ac2a1de27053d9341b5a35"
+resolved_reference = "bb8c806bce497d269b4fede464edbd5b458ca2f0"
 
 [[package]]
 name = "numpy"
