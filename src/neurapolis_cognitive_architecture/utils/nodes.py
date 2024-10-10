@@ -122,6 +122,6 @@ async def call_tool(state, config):
         tool_call_id=tool_call["id"],
     )
 
-    print("function_message", function_message)
+    # print("function_message", function_message)
 
     return {"messages": [function_message]}
