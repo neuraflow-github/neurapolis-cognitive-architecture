@@ -42,8 +42,9 @@ async def call_model(state, config):
 async def call_tool(state, config):
     print("\033[94mconfig", config, "\033[0m")
     last_message = state["messages"][-1]
-    from neurapolis_cognitive_architecture.utils.state import FilteredBaseMessage
     from typing import cast
+
+    from neurapolis_cognitive_architecture.utils.state import FilteredBaseMessage
 
     last_human_message = cast(
         FilteredBaseMessage,
@@ -52,16 +53,16 @@ async def call_tool(state, config):
     tool_call = last_message.tool_calls[0]
     query = tool_call["args"]["full_query"]
 
-    async def get_file_infos(query):
+    async def get_file_hits(query):
         from datetime import datetime
         from typing import AsyncIterator, Optional
+
         from neurapolis_retriever.graph import graph
         from neurapolis_retriever.models.date_filter import DateFilter
-        from neurapolis_retriever.models.file_info import FileInfo
+        from neurapolis_retriever.models.file_hit import FileHit
         from neurapolis_retriever.models.loader_update import LoaderUpdate
         from neurapolis_retriever.models.retriever_step import RetrieverStep
-        from neurapolis_retriever.state.state import State
-
+        from neurapolis_retriever.models.state import State
         from neurapolis_retriever.retriever_config import retriever_config
 
         retriever_config.planner_vector_search_limit = 1
@@ -120,7 +121,7 @@ async def call_tool(state, config):
                     continue
                 if retriever_step != RetrieverStep.FINISHER:
                     continue
-                file_infos = []
+                file_hits = []
                 if state:
                     for x_search in get_attr_or_key(state, "searches", []):
                         if not x_search:
@@ -140,7 +141,7 @@ async def call_tool(state, config):
                                     related_file = get_attr_or_key(
                                         x_hit, "related_file", {}
                                     )
-                                    file_info = FileInfo(
+                                    file_hit = FileHit(
                                         id=get_attr_or_key(related_file, "id"),
                                         name=get_attr_or_key(related_file, "name"),
                                         description=get_attr_or_key(
@@ -155,29 +156,29 @@ async def call_tool(state, config):
                                         ),
                                         highlight_areas=[],
                                     )
-                                    file_infos.append(file_info)
-                                    if len(file_infos) >= 20:
+                                    file_hits.append(file_hit)
+                                    if len(file_hits) >= 20:
                                         break
                                 except Exception as e:
                                     print(f"An error occurred: {e}")
                                     continue
-                        if len(file_infos) >= 20:
+                        if len(file_hits) >= 20:
                             break
-                    yield file_infos
+                    yield file_hits
                     break
 
-    file_infos = []
-    async for result in get_file_infos(query):
+    file_hits = []
+    async for result in get_file_hits(query):
         if isinstance(result, list):
-            file_infos = result
+            file_hits = result
             break
         # Handle LoaderUpdate if needed
 
-    # Serialize file_infos before adding to the content
-    serialized_file_infos = [file_info.model_dump() for file_info in file_infos]
+    # Serialize file_hits before adding to the content
+    serialized_file_hits = [file_hit.model_dump() for file_hit in file_hits]
 
     function_message = ToolMessage(
-        content=serialized_file_infos,
+        content=serialized_file_hits,
         name=tool_call["name"],
         tool_call_id=tool_call["id"],
     )

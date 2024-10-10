@@ -5,21 +5,22 @@ from uuid import uuid4
 
 from neurapolis_retriever.models.date_filter import DateFilter
 from neurapolis_retriever.models.file_highlight_area import FileHighlightArea
-from neurapolis_retriever.models.file_info import FileInfo
+from neurapolis_retriever.models.file_hit import FileHit
 from neurapolis_retriever.models.loader_update import LoaderUpdate
 from neurapolis_retriever.models.retriever_step import RetrieverStep
 from neurapolis_retriever.models.text_loader_log_entry import TextLoaderLogEntry
 
+from neurapolis_cognitive_architecture.models.ai_message import AiMessage
 from neurapolis_cognitive_architecture.models.message import Message
 from neurapolis_cognitive_architecture.models.message_role import MessageRole
+from neurapolis_cognitive_architecture.models.user_message import UserMessage
 
 
 class NeurapolisCognitiveArchitecture:
     async def query(
         self,
         thread_id: str,
-        query: str,
-        date_filter: Optional[DateFilter],
+        user_message: UserMessage,
         send_loader_update_to_client: Callable[[LoaderUpdate], None],
         send_message_to_client: Callable[[str], None],
     ):
@@ -27,13 +28,17 @@ class NeurapolisCognitiveArchitecture:
         # print("thread_id", thread_id)
 
         from langchain_core.callbacks import BaseCallbackHandler
-        from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+        from langchain_core.messages import HumanMessage, LcAIMessage, ToolMessage
 
         from neurapolis_cognitive_architecture.agent import graph
         from neurapolis_cognitive_architecture.utils.state import FilteredBaseMessage
 
         state = {
-            "messages": [FilteredBaseMessage(content=query, date_filter=date_filter)]
+            "messages": [
+                FilteredBaseMessage(
+                    content=user_message.content, date_filter=user_message.date_filter
+                )
+            ]
         }
         previous_tool_call = None
         async for event in graph.astream(
@@ -74,15 +79,15 @@ class NeurapolisCognitiveArchitecture:
                             and "messages" in data["agent"]
                             and isinstance(data["agent"]["messages"], list)
                             and len(data["agent"]["messages"]) > 0
-                            and isinstance(data["agent"]["messages"][0], AIMessage)
+                            and isinstance(data["agent"]["messages"][0], LcAIMessage)
                             and not data["agent"]["messages"][0].tool_calls
                         ):
                             ai_message = data["agent"]["messages"][0]
                             content = ai_message.content
 
                             if previous_tool_call is not None:
-                                file_infos = [
-                                    FileInfo(
+                                file_hits = [
+                                    FileHit(
                                         id=item["id"],
                                         name=item["name"],
                                         description=item["description"],
@@ -95,14 +100,12 @@ class NeurapolisCognitiveArchitecture:
                                     for item in previous_tool_call.content
                                 ]
                             else:
-                                file_infos = []
+                                file_hits = []
 
-                            message = Message(
+                            message = AiMessage(
                                 "msg_" + str(uuid4()),
-                                MessageRole.AI,
                                 content,
-                                None,
-                                file_infos,
+                                file_hits,
                             )
                             await send_message_to_client(message)
                             previous_tool_call = None

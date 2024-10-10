@@ -1,21 +1,23 @@
-from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_core.tools import BaseTool
-from pydantic import BaseModel, Field
-from typing import Optional, Type
-from langchain_core.callbacks.manager import (
-    CallbackManagerForToolRun,
-    AsyncCallbackManagerForToolRun,
-)
-from langchain_community.vectorstores import Neo4jVector
-from langchain_openai import OpenAIEmbeddings
-from dotenv import load_dotenv
 import os
+from typing import Optional, Type
+
+from dotenv import load_dotenv
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_community.vectorstores import Neo4jVector
+from langchain_core.callbacks.manager import (
+    AsyncCallbackManagerForToolRun,
+    CallbackManagerForToolRun,
+)
+from langchain_core.tools import BaseTool
+from langchain_openai import OpenAIEmbeddings
+from pydantic import BaseModel, Field
 
 # Load environment variables from .env file
 load_dotenv()
 
 
 class RetrieverInput(BaseModel):
+    # TODO What is urgency?
     full_query: str = Field(
         description="""When using get_information, create a complete sentence that captures the user's request in the context of a city council's Retrieval Augmented Generation system. Use the same language as the input. Examples:
 
