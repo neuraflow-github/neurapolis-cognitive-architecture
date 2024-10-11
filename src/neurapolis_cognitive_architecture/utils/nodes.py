@@ -20,12 +20,30 @@ def should_continue(state):
     return "continue" if last_message.tool_calls else "end"
 
 
+from neurapolis_retriever.models.file_hit import FileHit
 from pydantic import BaseModel
 
 
 async def call_model(state, config):
     messages = state["messages"]
 
+    stripped_messages = []
+    for x_message in messages:
+        if isinstance(x_message, ToolMessage):
+            file_hits = [
+                FileHit(**file_hit_dict) for file_hit_dict in x_message.content
+            ]
+            inner_xml = FileHit.format_multiple_to_inner_llm_xml(file_hits)
+            xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
+            stripped_messages.append(
+                ToolMessage(
+                    content=xml,
+                    name=x_message.name,
+                    tool_call_id=x_message.tool_call_id,
+                )
+            )
+        else:
+            stripped_messages.append(x_message)
     model = ChatBedrock(
         model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
         model_kwargs=dict(temperature=0),
@@ -53,7 +71,7 @@ async def call_model(state, config):
     )
 
     model = prompt | model.bind_tools(tools)
-    response = await model.ainvoke({"messages": messages})
+    response = await model.ainvoke({"messages": stripped_messages})
     return {"messages": [response]}
 
 
@@ -105,7 +123,7 @@ async def call_tool(state, config):
 
             print("---")
         elif isinstance(x_event, list):
-            file_hits = x_event[:5]
+            file_hits = x_event[:10]
             print("---")
             print("Retrieved File Infos:")
             # for x_file_hit in file_hits:

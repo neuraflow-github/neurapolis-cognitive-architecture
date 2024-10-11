@@ -1795,7 +1795,7 @@ python-dotenv = "^1.0.1"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-common.git"
 reference = "HEAD"
-resolved_reference = "d7598912fdb78c616f5b3bd019abcd2f9ba2d6ae"
+resolved_reference = "c594ccc60c17dcd01903d99e790a8d1439c63b7b"
 
 [[package]]
 name = "neurapolis-retriever"
@@ -1824,7 +1824,7 @@ rich = "^13.8.1"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-retriever.git"
 reference = "HEAD"
-resolved_reference = "4f882c8dcad1c8e7b5bedbd6d62b244e0c4d571d"
+resolved_reference = "fa8adbcf3130d763342abbf7c1d5cdf071afd42d"
 
 [[package]]
 name = "numpy"
