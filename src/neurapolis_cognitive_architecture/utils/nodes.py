@@ -46,6 +46,24 @@ async def call_model(state, config):
     from langchain_core.messages import SystemMessage
     from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 
+    stripped_messages = []
+    for x_message in messages:
+        if isinstance(x_message, ToolMessage):
+            file_hits = [
+                FileHit(**x_file_hit_dict) for x_file_hit_dict in x_message.content
+            ]
+            inner_xml = FileHit.format_multiple_to_small_inner_llm_xml(file_hits)
+            xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
+            stripped_messages.append(
+                ToolMessage(
+                    content=xml,
+                    name=x_message.name,
+                    tool_call_id=x_message.tool_call_id,
+                )
+            )
+        else:
+            stripped_messages.append(x_message)
+
     chat_prompt_template_string = """
     Du bist ein Kl-Assistent, der speziell für die Suche und Analyse von politischen Ratsakten der Stadt Freiburg entwickelt wurde. Deine Hauptaufgabe ist es, prazise und relevante Informationen aus diesen Dokumenten bereitzustellen.
     Wichtige Regeln:
@@ -67,24 +85,6 @@ async def call_model(state, config):
     )
 
     chain = trimmer | chat_prompt_template | tool_llm
-
-    stripped_messages = []
-    for x_message in messages:
-        if isinstance(x_message, ToolMessage):
-            file_hits = [
-                FileHit(**x_file_hit_dict) for x_file_hit_dict in x_message.content
-            ]
-            inner_xml = FileHit.format_multiple_to_small_inner_llm_xml(file_hits)
-            xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
-            stripped_messages.append(
-                ToolMessage(
-                    content=xml,
-                    name=x_message.name,
-                    tool_call_id=x_message.tool_call_id,
-                )
-            )
-        else:
-            stripped_messages.append(x_message)
 
     response = await chain.ainvoke({"messages": stripped_messages})
     return {"messages": [response]}
