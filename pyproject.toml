@@ -20,6 +20,7 @@ uvicorn = "^0.31.0"
 sse-starlette = "^2.1.3"
 pytz = "^2024.2"
 neurapolis-retriever = { git = "https://github.com/neuraflow-github/neurapolis-retriever.git" }
+langchain-anthropic = "^0.2.3"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
