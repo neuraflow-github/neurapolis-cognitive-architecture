@@ -7,9 +7,10 @@ import pytz
 from langchain import hub
 from langchain_aws import ChatBedrock
 from langchain_core.documents import Document
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import ToolMessage, trim_messages
 from langchain_core.runnables import RunnableLambda
 from langchain_openai import AzureChatOpenAI
+from neurapolis_common.services.text_splitter import text_splitter
 
 from neurapolis_cognitive_architecture.utils.tools import tools
 
@@ -27,35 +28,25 @@ from pydantic import BaseModel
 async def call_model(state, config):
     messages = state["messages"]
 
-    stripped_messages = []
-    for x_message in messages:
-        if isinstance(x_message, ToolMessage):
-            file_hits = [
-                FileHit(**file_hit_dict) for file_hit_dict in x_message.content
-            ]
-            inner_xml = FileHit.format_multiple_to_inner_llm_xml(file_hits)
-            xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
-            stripped_messages.append(
-                ToolMessage(
-                    content=xml,
-                    name=x_message.name,
-                    tool_call_id=x_message.tool_call_id,
-                )
-            )
-        else:
-            stripped_messages.append(x_message)
-    model = ChatBedrock(
+    llm = ChatBedrock(
         model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
-        model_kwargs=dict(temperature=0),
+        model_kwargs={"temperature": 0},
         name="agent",
     )
+    tool_llm = llm.bind_tools(tools)
 
-    from langchain_core.prompts import PromptTemplate
+    trimmer = trim_messages(
+        token_counter=llm,
+        max_tokens=45,
+        include_system=True,
+        allow_partial=True,
+        text_splitter=text_splitter,
+    )
 
-    # prompt = hub.pull("neurapolis/neurapolis-ca-dev")
+    from langchain_core.messages import SystemMessage
+    from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 
-    prompt = PromptTemplate.from_template(
-        """
+    chat_prompt_template_string = """
     Du bist ein Kl-Assistent, der speziell für die Suche und Analyse von politischen Ratsakten der Stadt Freiburg entwickelt wurde. Deine Hauptaufgabe ist es, prazise und relevante Informationen aus diesen Dokumenten bereitzustellen.
     Wichtige Regeln:
     Verwende ausschließlich Informationen aus den offiziellen Ratsakten von Freiburg.
@@ -68,15 +59,38 @@ async def call_model(state, config):
 
     {messages}
     """
+    chat_prompt_template = ChatPromptTemplate.from_messages(
+        [
+            SystemMessage(chat_prompt_template_string),
+            *stripped_messages,
+        ]
     )
 
-    model = prompt | model.bind_tools(tools)
-    response = await model.ainvoke({"messages": stripped_messages})
+    chain = trimmer | chat_prompt_template | tool_llm
+
+    stripped_messages = []
+    for x_message in messages:
+        if isinstance(x_message, ToolMessage):
+            file_hits = [
+                FileHit(**x_file_hit_dict) for x_file_hit_dict in x_message.content
+            ]
+            inner_xml = FileHit.format_multiple_to_small_inner_llm_xml(file_hits)
+            xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
+            stripped_messages.append(
+                ToolMessage(
+                    content=xml,
+                    name=x_message.name,
+                    tool_call_id=x_message.tool_call_id,
+                )
+            )
+        else:
+            stripped_messages.append(x_message)
+
+    response = await chain.ainvoke({"messages": stripped_messages})
     return {"messages": [response]}
 
 
 async def call_tool(state, config):
-
     print(
         "\033[94mconfig",
         config["configurable"]["send_loader_update_to_client"],
