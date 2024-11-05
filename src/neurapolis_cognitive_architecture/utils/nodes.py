@@ -29,13 +29,6 @@ from pydantic import BaseModel
 async def call_model(state, config):
     messages = state["messages"]
 
-    llm = ChatBedrock(
-        model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
-        temperature=0,
-        name="agent",
-    )
-    tool_llm = llm.bind_tools(tools)
-
     trimmer_llm = ChatAnthropic(
         model="claude-3-5-sonnet-20240620",
     )
@@ -56,7 +49,8 @@ async def call_model(state, config):
             file_hits = [
                 FileHit(**x_file_hit_dict) for x_file_hit_dict in x_message.content
             ]
-            inner_xml = FileHit.format_multiple_to_small_inner_llm_xml(file_hits)
+            capped_file_hits = file_hits[:10]
+            inner_xml = FileHit.format_multiple_to_small_inner_llm_xml(capped_file_hits)
             xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
             stripped_messages.append(
                 ToolMessage(
@@ -87,7 +81,12 @@ async def call_model(state, config):
             *stripped_messages,
         ]
     )
-
+    llm = ChatBedrock(
+        model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
+        temperature=0,
+        name="agent",
+    )
+    tool_llm = llm.bind_tools(tools)
     chain = trimmer | chat_prompt_template | tool_llm
 
     response = await chain.ainvoke({"messages": stripped_messages})
