@@ -77,7 +77,7 @@ async def call_model(state, config):
 
     {messages}
     """
-    chat_prompt_template = ChatPromptTemplate.from_messages(
+    chat_prompt_template = ChatPromptTemplate(
         [
             SystemMessage(chat_prompt_template_string),
             *stripped_messages,
