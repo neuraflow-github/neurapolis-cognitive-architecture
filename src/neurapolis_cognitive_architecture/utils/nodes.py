@@ -21,6 +21,7 @@ def should_continue(state):
     return "continue" if last_message.tool_calls else "end"
 
 
+from langchain_anthropic import ChatAnthropic
 from neurapolis_retriever.models.file_hit import FileHit
 from pydantic import BaseModel
 
@@ -30,14 +31,17 @@ async def call_model(state, config):
 
     llm = ChatBedrock(
         model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
-        model_kwargs={"temperature": 0},
+        temperature=0,
         name="agent",
     )
     tool_llm = llm.bind_tools(tools)
 
+    trimmer_llm = ChatAnthropic(
+        model="claude-3-5-sonnet-20240620",
+    )
     trimmer = trim_messages(
-        token_counter=llm,
-        max_tokens=45,
+        token_counter=trimmer_llm,
+        max_tokens=175_000,
         include_system=True,
         allow_partial=True,
         text_splitter=text_splitter,
