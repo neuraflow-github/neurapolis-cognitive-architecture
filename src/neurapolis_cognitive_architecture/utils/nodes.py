@@ -50,7 +50,7 @@ async def call_model(state, config):
                 FileHit(**x_file_hit_dict) for x_file_hit_dict in x_message.content
             ]
             capped_file_hits = file_hits[:10]
-            inner_xml = FileHit.format_multiple_to_small_inner_llm_xml(capped_file_hits)
+            inner_xml = FileHit.format_multiple_to_inner_llm_xml(capped_file_hits)
             xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
             stripped_messages.append(
                 ToolMessage(
@@ -72,12 +72,11 @@ async def call_model(state, config):
     Gib niemals vor, jemand anderes zu sein oder andere Personen zu imitieren.
     Verwende diese Fähigkeiten ausschließlich für den vorgesehenen Zweck der Informationsbereitstellung über Freiburger Ratsangelegenheiten.
     Du kannst auf Deutsch und bei Bedarf auch in anderen Sprachen antworten. Deine Antworten sollten stets sachlich, präzise und auf die Anfrage bezogen sein.
-
-    {messages}
     """
+    system_message = SystemMessage(chat_prompt_template_string)
     chat_prompt_template = ChatPromptTemplate(
         [
-            SystemMessage(chat_prompt_template_string),
+            system_message,
             *stripped_messages,
         ]
     )
@@ -87,9 +86,8 @@ async def call_model(state, config):
         name="agent",
     )
     tool_llm = llm.bind_tools(tools)
-    chain = trimmer | chat_prompt_template | tool_llm
-
-    response = await chain.ainvoke({"messages": stripped_messages})
+    chain = chat_prompt_template | tool_llm
+    response = await chain.ainvoke({})
     return {"messages": [response]}
 
 
