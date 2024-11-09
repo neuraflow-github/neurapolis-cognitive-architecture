@@ -1,6 +1,0 @@
-# Ignore everything except src/, Dockerfiles, and poetry files
-*
-!src/**
-!Dockerfile*
-!pyproject.toml
-!poetry.lock

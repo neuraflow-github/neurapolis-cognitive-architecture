@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from neurapolis_common.models.dto import Dto
 
-from .message_role import MessageRole
+from ..enums.message_role import MessageRole
 
 
 class Message(Dto["Message"], ABC):
