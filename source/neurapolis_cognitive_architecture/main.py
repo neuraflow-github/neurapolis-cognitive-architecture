@@ -4,12 +4,11 @@ from neurapolis_cognitive_architecture.graph.graph import graph
 from neurapolis_cognitive_architecture.models.graph_config import GraphConfig
 from neurapolis_cognitive_architecture.models.my_ai_message import MyAiMessage
 from neurapolis_cognitive_architecture.models.my_human_message import MyHumanMessage
+from neurapolis_cognitive_architecture.models.state import State
 from neurapolis_cognitive_architecture.utilities.get_last_message_of_type import (
     get_last_message_of_type,
 )
 from neurapolis_retriever.models.loader_update import LoaderUpdate
-
-from source.neurapolis_cognitive_architecture.models.state import State
 
 # TODO how to pass through config with datefilter and quality preset, or get access to it in tool via last user message
 # TODO Fix all dtos
@@ -27,7 +26,7 @@ class NeurapolisCognitiveArchitecture:
         user_message: MyHumanMessage,
         send_loader_update_to_client: Callable[[LoaderUpdate], None],
         send_ai_message_to_client: Callable[[MyAiMessage], None],
-    ) -> None:
+    ):
         # print("thread_id", thread_id)
 
         messages = [user_message]

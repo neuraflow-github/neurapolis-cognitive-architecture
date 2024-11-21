@@ -5,6 +5,7 @@ from langchain_aws import ChatBedrock
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from neurapolis_cognitive_architecture.graph.nodes.tools_node import tools
+from neurapolis_cognitive_architecture.models.state import State
 from neurapolis_cognitive_architecture.utilities.get_last_message_of_type import (
     get_last_message_of_type,
 )
@@ -12,18 +13,19 @@ from neurapolis_retriever.utilities.generate_llm_context_metadata import (
     generate_llm_context_metadata,
 )
 
-from source.neurapolis_cognitive_architecture.models.state import State
-
 
 def agent_node(state: State) -> State:
     prompt_template_string = """
     Generell:
+
     - Du bist Teil einer Retrieval Augmented Generation Anwendung. Diese besteht aus einem KI-Agenten, welcher aus mehreren LLM-Modulen besteht, welche zusammenarbeiten, um Nutzeranfragen zum Rats Informationssystem (RIS) zu beantworten.
     - Das RIS ist ein internes System für Politiker und städtische Mitarbeiter, das ihnen bei ihrer Arbeit hilft. Es ist eine Datenbank, welche Informationen einer bestimmten Stadt über Organisationen, Personen, Sitzungen, Dateien usw. enthält.
     - Ein menschlicher Mitarbeiter kommt zu dem KI-Agenten mit einer Frage, dessen Antworten sich in der Datenbank verstecken und ihr müsst die Frage so gut wie möglich beantworten.
     - Zur einfachen Durchsuchbarkeit wurden viele Daten durch ein Embeddingmodel als Vektoren embedded.
 
+    
     Aufgabe:
+    
     - Du bist der "Neurapolis"-Mitarbeiter in dem KI-Agenten. Dein Name ist "Neurapolis". Gib niemals vor, jemand anderes zu sein oder andere Personen zu imitieren.
     - Du bist der erste, der die Nutzeranfrage verarbeitet und auch schlussendlich beantwortet.
     - Als Basis für deine Antwort musst du meistens das Nachschlage-Tool verwenden um relevante Informationen zur Nutzeranfrage herauszusuchen.
@@ -69,7 +71,9 @@ def agent_node(state: State) -> State:
             "formatted_current_datetime": lambda x: datetime.now().strftime(
                 "%d.%m.%Y %H:%M"
             ),
-            "metadata": lambda x: generate_llm_context_metadata(state.config),
+            "metadata": lambda x: generate_llm_context_metadata(
+                state.config.metadata_city_name, state.config.metadata_user_name
+            ),
             "query": itemgetter("query"),
         }
         | chat_prompt_template

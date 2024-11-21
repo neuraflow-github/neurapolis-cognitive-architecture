@@ -2,14 +2,13 @@ from typing import Any, Optional
 
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_core.tools import tool
+from neurapolis_cognitive_architecture.models.state import State
 from neurapolis_cognitive_architecture.utilities import get_last_message_of_type
 from neurapolis_retriever.main import NeurapolisRetriever
 from neurapolis_retriever.models.date_filter import DateFilter
 from neurapolis_retriever.models.file_hit import FileHit
 from neurapolis_retriever.models.loader_update import LoaderUpdate
 from neurapolis_retriever.models.quality_preset import QualityPreset
-
-from source.neurapolis_cognitive_architecture.models.state import State
 
 
 async def retriever_node(state: State, config) -> State:
