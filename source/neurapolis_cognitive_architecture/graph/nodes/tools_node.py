@@ -3,10 +3,7 @@ from typing import Any, Optional
 from langchain_core.runnables.config import RunnableConfig
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
-from neurapolis_retriever.main import NeurapolisRetriever
-from neurapolis_retriever.models.date_filter import DateFilter
-from neurapolis_retriever.models.file_hit import FileHit
-from neurapolis_retriever.models.loader_update import LoaderUpdate
+from neurapolis_retriever import DateFilter, FileHit, LoaderUpdate, NeurapolisRetriever
 
 
 @tool

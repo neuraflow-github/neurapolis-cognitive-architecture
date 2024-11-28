@@ -1,5 +1,4 @@
-from neurapolis_common.config.environment import Environment
-from neurapolis_common.config.get_environment import get_environment
+from neurapolis_common import Environment, get_environment
 
 from .base_config import BaseConfig
 from .config_development import DevelopmentConfig

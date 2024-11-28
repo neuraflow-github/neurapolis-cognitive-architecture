@@ -1,7 +1,7 @@
 from typing import Optional
 
-from neurapolis_cognitive_architecture.enums.message_role import MessageRole
-from neurapolis_retriever.models.file_hit import FileHit
+from neurapolis_cognitive_architecture.enums import MessageRole
+from neurapolis_retriever import FileHit
 
 from .message import Message
 
@@ -18,7 +18,7 @@ class MyAiMessage(Message):
         super().__init__(id, MessageRole.AI, content)
         self.file_hits = file_hits
 
-    def convert_to_dto(self):
+    def convert_to_data(self):
         return {
             "id": self.id,
             "role": self.role.value,
@@ -26,10 +26,10 @@ class MyAiMessage(Message):
             "fileHits": (
                 None
                 if self.file_hits is None
-                else [x_file.to_dto() for x_file in self.file_hits]
+                else [x_file.convert_to_data() for x_file in self.file_hits]
             ),
         }
 
     @classmethod
-    def create_from_dto(cls, ai_message_dto: dict) -> "MyAiMessage":
+    def create_from_data(cls, ai_message_dto: dict) -> "MyAiMessage":
         raise Exception("NOT_IMPLEMENTED")

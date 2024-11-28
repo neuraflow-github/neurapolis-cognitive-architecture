@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from neurapolis_common.models.dto import Dto
-
-from ..enums.message_role import MessageRole
+from neurapolis_cognitive_architecture.enums import MessageRole
+from neurapolis_common import Dto
 
 
 class Message(Dto["Message"], ABC):
@@ -21,10 +20,10 @@ class Message(Dto["Message"], ABC):
         self.content = content
 
     @abstractmethod
-    def to_dto(self) -> dict:
+    def convert_to_data(self) -> dict:
         pass
 
     @classmethod
     @abstractmethod
-    def from_dto(cls, message_dto: dict) -> "Message":
+    def create_from_data(cls, message_dto: dict) -> "Message":
         pass

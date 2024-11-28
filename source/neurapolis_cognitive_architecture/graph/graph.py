@@ -1,12 +1,9 @@
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import tools_condition
-from neurapolis_cognitive_architecture.enums.cogitive_architecture_step import (
-    CognitiveArchitectureStep,
-)
-from neurapolis_cognitive_architecture.graph.nodes.agent_node import agent_node
-from neurapolis_cognitive_architecture.graph.nodes.tools_node import tools_node
-from neurapolis_cognitive_architecture.models.graph_config import GraphConfig
-from neurapolis_cognitive_architecture.models.state import State
+from neurapolis_cognitive_architecture.enums import CognitiveArchitectureStep
+from neurapolis_cognitive_architecture.models import GraphConfig, State
+
+from .nodes import agent_node, tools_node
 
 graph_builder = StateGraph(State, GraphConfig)
 

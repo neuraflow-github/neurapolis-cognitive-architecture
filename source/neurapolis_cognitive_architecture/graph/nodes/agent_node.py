@@ -4,14 +4,10 @@ from operator import itemgetter
 from langchain_aws import ChatBedrock
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from neurapolis_cognitive_architecture.graph.nodes.tools_node import tools
-from neurapolis_cognitive_architecture.models.state import State
-from neurapolis_cognitive_architecture.utilities.get_last_message_of_type import (
-    get_last_message_of_type,
-)
-from neurapolis_retriever.utilities.generate_llm_context_metadata import (
-    generate_llm_context_metadata,
-)
+from neurapolis_cognitive_architecture.models import State
+from neurapolis_common import generate_llm_context_metadata, get_last_message_of_type
+
+from .tools_node import tools
 
 
 def agent_node(state: State) -> State:
