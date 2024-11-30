@@ -13,7 +13,9 @@ graph_builder.add_node(CognitiveArchitectureStep.TOOLS.value, tools_node)
 graph_builder.set_entry_point(CognitiveArchitectureStep.AGENT.value)
 
 graph_builder.add_conditional_edges(
-    CognitiveArchitectureStep.AGENT.value, tools_condition
+    CognitiveArchitectureStep.AGENT.value,
+    tools_condition,
+    {"tools": CognitiveArchitectureStep.TOOLS.value, "__end__": "__end__"},
 )
 graph_builder.add_edge(
     CognitiveArchitectureStep.TOOLS.value, CognitiveArchitectureStep.AGENT.value

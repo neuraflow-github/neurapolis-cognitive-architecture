@@ -2,22 +2,13 @@ from abc import ABC, abstractmethod
 
 from neurapolis_cognitive_architecture.enums import MessageRole
 from neurapolis_common import Dto
+from pydantic import BaseModel, Field
 
 
-class Message(Dto["Message"], ABC):
-    id: str
-    role: MessageRole
-    content: str
-
-    def __init__(
-        self,
-        id: str,
-        role: MessageRole,
-        content: str,
-    ):
-        self.id = id
-        self.role = role
-        self.content = content
+class Message(BaseModel, Dto["Message"], ABC):
+    id: str = Field()
+    role: MessageRole = Field()
+    content: str = Field()
 
     @abstractmethod
     def convert_to_data(self) -> dict:
@@ -25,5 +16,5 @@ class Message(Dto["Message"], ABC):
 
     @classmethod
     @abstractmethod
-    def create_from_data(cls, message_dto: dict) -> "Message":
+    def create_from_data(cls, data: dict) -> "Message":
         pass

@@ -1,14 +1,20 @@
+import asyncio
 from typing import Any, Optional
 
 from langchain_core.runnables.config import RunnableConfig
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
-from neurapolis_retriever import DateFilter, FileHit, LoaderUpdate, NeurapolisRetriever
+from neurapolis_retriever import (
+    DateFilter,
+    LoaderUpdate,
+    NeurapolisRetriever,
+    RetrievedFile,
+)
 
 
 @tool
-async def retriever_tool(
-    query: str, date_filter: DateFilter, config: RunnableConfig
+def retriever_tool(
+    query: str, date_filter: DateFilter, runnable_config: RunnableConfig
 ) -> str:
     """Mit diesem Nachschlage-Tool kannst du Fakten nachschlagen. Es enthält alle Daten aus dem RIS.
 
@@ -16,28 +22,36 @@ async def retriever_tool(
         query: Die Suchanfrage, nach der gesucht werden soll
         date_filter: Ein Filter für das Datum der Dokumente
     """
+    print("retriever_tool", query, date_filter, runnable_config)
+
     retriever = NeurapolisRetriever()
 
-    file_hits: Optional[list[FileHit]] = None
-    async for x_event in retriever.retrieve(
-        query,
-        date_filter,
-        config.quality_preset,
-    ):
-        if isinstance(x_event, LoaderUpdate):
-            await config["configurable"]["send_loader_update_to_client"](x_event)
-        elif isinstance(x_event, list):
-            file_hits = x_event
+    async def _retrieve():
+        retrieved_files: Optional[list[RetrievedFile]] = None
+        async for x_event in retriever.retrieve(
+            query,
+            date_filter,
+            runnable_config.quality_preset,
+        ):
+            if isinstance(x_event, LoaderUpdate):
+                await runnable_config["configurable"]["send_loader_update_to_client"](
+                    x_event
+                )
+            elif isinstance(x_event, list):
+                retrieved_files = x_event
+        return retrieved_files
 
-    file_hits_data: list[dict[str, Any]] = []
-    for x_file_hit in file_hits:
-        file_hits_data.append(x_file_hit.model_dump())
+    retrieved_files = asyncio.run(_retrieve())
 
-    capped_file_hits = file_hits[:10]
-    inner_xml = FileHit.format_multiple_to_inner_llm_xml(capped_file_hits)
-    xml = f"<{FileHit.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{FileHit.get_llm_xml_tag_name_prefix()}>"
+    retrieved_files_data: list[dict[str, Any]] = []
+    for x_retrieved_file in retrieved_files:
+        retrieved_files_data.append(x_retrieved_file.model_dump())
 
-    return xml, file_hits_data
+    capped_retrieved_files = retrieved_files[:10]
+    inner_xml = RetrievedFile.format_multiple_to_inner_llm_xml(capped_retrieved_files)
+    xml = f"<{RetrievedFile.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{RetrievedFile.get_llm_xml_tag_name_prefix()}>"
+
+    return xml, retrieved_files_data
 
 
 tools = [retriever_tool]

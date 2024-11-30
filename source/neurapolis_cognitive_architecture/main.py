@@ -28,5 +28,6 @@ class NeurapolisCognitiveArchitecture:
             configurable={"thread_id": thread_id},
         )
         result_state = graph.invoke(state, graph_config)
+        print("result_state", result_state)
         last_ai_message = get_last_message_of_type(result_state.messages, MyAiMessage)
         send_ai_message_to_client(last_ai_message)

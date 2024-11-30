@@ -4,7 +4,7 @@ from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_core.tools import tool
 from neurapolis_cognitive_architecture.models import State
 from neurapolis_common import get_last_message_of_type
-from neurapolis_retriever import FileHit, LoaderUpdate, NeurapolisRetriever
+from neurapolis_retriever import LoaderUpdate, NeurapolisRetriever, RetrievedFile
 
 
 async def retriever_node(state: State, config) -> State:
@@ -14,7 +14,7 @@ async def retriever_node(state: State, config) -> State:
 
     retriever = NeurapolisRetriever()
 
-    file_hits: Optional[list[FileHit]] = None
+    retrieved_files: Optional[list[RetrievedFile]] = None
     async for x_event in retriever.retrieve(
         last_human_message.content,
         last_human_message.date_filter,
@@ -23,14 +23,14 @@ async def retriever_node(state: State, config) -> State:
         if isinstance(x_event, LoaderUpdate):
             await config["configurable"]["send_loader_update_to_client"](x_event)
         elif isinstance(x_event, list):
-            file_hits = x_event
+            retrieved_files = x_event
 
-    file_hits_data: list[dict[str, Any]] = []
-    for x_file_hit in file_hits:
-        file_hits_data.append(x_file_hit.model_dump())
+    retrieved_files_data: list[dict[str, Any]] = []
+    for x_retrieved_file in retrieved_files:
+        retrieved_files_data.append(x_retrieved_file.model_dump())
 
     function_message = ToolMessage(
-        content=file_hits_data,
+        content=retrieved_files_data,
         name=last_tool_message.name,
         tool_call_id=last_tool_message.tool_call_id,
     )
@@ -44,7 +44,7 @@ async def retriever_tool(query: str, date_filter: dict, config) -> str:
 
     retriever = NeurapolisRetriever()
 
-    file_hits: Optional[list[FileHit]] = None
+    retrieved_files: Optional[list[RetrievedFile]] = None
     async for x_event in retriever.retrieve(
         query,
         date_filter,
@@ -53,13 +53,13 @@ async def retriever_tool(query: str, date_filter: dict, config) -> str:
         if isinstance(x_event, LoaderUpdate):
             await config["configurable"]["send_loader_update_to_client"](x_event)
         elif isinstance(x_event, list):
-            file_hits = x_event
+            retrieved_files = x_event
 
-    file_hits_data: list[dict[str, Any]] = []
-    for x_file_hit in file_hits:
-        file_hits_data.append(x_file_hit.model_dump())
+    retrieved_files_data: list[dict[str, Any]] = []
+    for x_retrieved_file in retrieved_files:
+        retrieved_files_data.append(x_retrieved_file.model_dump())
 
-    return file_hits_data
+    return retrieved_files_data
 
 
 tools = [retriever_tool]

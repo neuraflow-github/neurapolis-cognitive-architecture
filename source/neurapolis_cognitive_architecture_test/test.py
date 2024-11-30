@@ -29,11 +29,11 @@ async def run_cognitive_architecture():
         print("---")
 
     user_message = MyHumanMessage(
-        content="Welche Spielplätze wurden gebaut oder geplant?"
+        id=str(uuid4()), content="Welche Spielplätze wurden gebaut oder geplant?"
     )
 
     await cognitive_architecture.query(
-        thread_id=uuid4(),
+        thread_id=str(uuid4()),
         user_message=user_message,
         send_loader_update_to_client=send_loader_update_to_client,
         send_ai_message_to_client=send_ai_message_to_client,

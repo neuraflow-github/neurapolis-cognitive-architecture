@@ -3,7 +3,10 @@ name = "neurapolis-cognitive-architecture"
 version = "0.1.15"
 description = ""
 authors = ["Your Name <you@example.com>"]
-packages = [{ include = "neurapolis_cognitive_architecture", from = "source" }]
+packages = [
+    {include = "neurapolis_cognitive_architecture", from = "source"},
+    {include = "neurapolis_cognitive_architecture_test", from = "source"},
+]
 
 [tool.poetry.dependencies]
 python = "^3.12,<3.13"
