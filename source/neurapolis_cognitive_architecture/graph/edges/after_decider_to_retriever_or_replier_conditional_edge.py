@@ -15,8 +15,8 @@ def after_decider_to_retriever_or_replier_conditional_edge(
     last_ai_message: AIMessage = get_last_message_of_type(state.messages, AIMessage)
 
     if len(last_ai_message.tool_calls) > 0:
-        tool_call = last_ai_message.tool_calls[0]
-        if tool_call.name == GraphStep.RETRIEVER.value:
+        tool_call: ToolCall = last_ai_message.tool_calls[0]
+        if tool_call["name"] == GraphStep.RETRIEVER.value:
             return GraphStep.RETRIEVER.value
 
     return GraphStep.REPLIER.value

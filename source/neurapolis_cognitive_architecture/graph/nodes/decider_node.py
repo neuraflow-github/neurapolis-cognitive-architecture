@@ -10,29 +10,30 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable, RunnableLambda
 from neurapolis_cognitive_architecture.config import config
 from neurapolis_cognitive_architecture.enums import GraphStep
-from neurapolis_cognitive_architecture.models import MyHumanMessage
+from neurapolis_cognitive_architecture.models import MyHumanMessage, State
 from neurapolis_cognitive_architecture.utilities import truncate_messages
 from neurapolis_common import UserMetadata
 from neurapolis_common import config as common_config
 from neurapolis_common import get_last_message_of_type
-from neurapolis_retriever.models import State
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger()
 
 
 class DeciderLlmDataModel(BaseModel):
-    should_use_retriever: bool = Field(
-        description="Gibt an, ob der Retriever verwendet werden soll"
+    explanation: str = Field(
+        description="Eine kurze (1 Satz) Erklärung, warum nachgeschlagen werden sollte oder nicht."
     )
-    query: Optional[str] = Field(description="Die Anfrage an den Retriever")
+    should_use_retriever: bool = Field(
+        description="Soll das Nachschlagetool verwendet werden?"
+    )
+    query: Optional[str] = Field(description="Die Suchanfrage an das Nachschlagetool")
 
 
 class DeciderNode:
     _chain: Runnable
 
     def __init__(self):
-        # TODO: Prompt, Trim of the tool messages first.
         prompt_template_string = """Generell:
 
 - Du bist Teil einer Retrieval Augmented Generation Anwendung. Diese besteht aus einem KI-Agenten, welcher aus mehreren LLM-Modulen besteht, welche zusammenarbeiten, um Nutzeranfragen zum Rats Informationssystem (RIS) zu beantworten.
@@ -43,19 +44,36 @@ class DeciderNode:
 
 Aufgabe:
 
-- Du bist der "Planner"-Mitarbeiter in dem KI-Agenten.
-- Du bist der erste, der die Nutzeranfrage verarbeitet.
-- Eine Nutzeranfrage kann auf mehrere Themenbereiche abzielen und wenn der "Retriever"-Mitarbeiter eine Suche mit einem gemischten Themenbereich auf der Datenbank durchführt, bekommt er sehr gemischte Treffer, wodurch die Nutzeranfragen nicht gut beantwortet werden kann.
-- Deine Aufgabe ist es, die Nutzeranfrage in spezifischere, genauere, abzielendere Suchanfragen zu konvertieren.
-- Diese sollten zwar spezifisch sein, aber trotzdem noch einen sehr guten Detailgrad haben und ganze Sätz sein. Sehr kurze oder allgemeine Sätze führen dazu, dass der "Retriever"-Mitarbeiter sehr viele allgemeine Treffer bekommt, wodurch die Antwort auf die Nutzeranfrage dann sehr schwammig wird, oder oft die gleiche ist, weil oft eher die allgemeinen Dokumente aus der Datenbank zurückgegeben werden.
-- Die Suchanfragen können auch auf bestimmte Keywords wie Aktenzeichen, Referenzen, Nummern, Namen, Orte, Straßennamen, Gebäudenamen, Firmennamen, etc. abzielen. Keywords sollen aber auf keinen Fall sehr allgemeine, geläufige Wörter sein (z. B. "Zeitungsarchiv") und auch nicht nur ein Datum.
-- Gebe mindestens zwei Suchanfragen an und maximal {planner_search_limit}.
-- Deine Antwort geht an den "Retriever"-Mitarbeiter, welcher dann mit den Suchanfragen Dokumente aus der Datenbank holt.
-- Du wirst für die gleiche Nutzeranfrage mehrmals durchlaufen, damit du mehrere Chancen hast, die perfekten Suchanfragen zu finden.
-- Damit du weißt wie du dich verbessern kannst, wird dir vom "Relevance-Grader"-Mitarbeiter Feedback gegeben, ob die Suchanfragen, die du vorgeschlagen hast, relevante Artikel hervorgebracht haben oder nicht.
-- Wenn du Feedback bekommst, versuche nochmal für jeden irrelevanten Themenbereich eine KOMPLETT NEUE Suchanfrage zu finden.
+- Du bist der "Decider"-Mitarbeiter in dem KI-Agenten.
+- Deine Aufgabe ist es, zu entscheiden, ob für die Nutzeranfrage das Nachschlagetool verwendet werden muss.
+- Der Standardfall ist, dass nachgeschlagen werden muss, da die meisten Nutzeranfragen auf Informationen abzielen, welche sich im RIS befinden.
+- Der "Replier"-Mitarbeiter, welcher am Ende die Nutzeranfrage beantwortet, darf nur nachgeschlagene Informationen aus dem RIS und Informationen, welche sich schon im Chatverlauf befinden, verwenden.
+- Es muss nur nicht nachschlagen werden,
+    - wenn es sich um eine simple Konversationsfrage wie "Hallo, wie geht es dir?" oder "Welchen Tag haben wir heute?" handelt.
+    - für Zusammenfassungen oder Ähnlichem von Informationen, welche sich schon im Chatverlauf befinden.
+- Die Suchanfrage an das Nachschlagetool muss in deutsch sein, auch wenn die Nutzeranfrage in einer anderen Sprache ist.
+- Die Suchanfrage sollte außerdem alle Informationen aus der Nutzeranfrage enthalten, aber prägnant sein. Wenn der Nutzer z. B. Dinge doppelt und dreifach beschreibt, dann sollte die Suchanfrage die Information nur einmal enthalten.
 
 
+Beispiele:
+
+- Beispiel 1:
+    - Nutzeranfrage: "Was ist die Adresse der Stadthalle?"
+    - Antwort:
+        - should_use_retriever: True
+        - query: "Wie lautet die Adresse der Stadthalle?"
+- Beispiel 2:
+    - Nutzeranfrage: "Hallo, wie geht es dir?"
+    - Antwort:
+        - should_use_retriever: False
+        - query: None
+- Beispiel 3:
+    - Nutzeranfrage: "Gebe mir die Baugenehmigung für den Bau des Krankenhauses an der Königstraße. An der König"
+    - Antwort:
+        - should_use_retriever: True
+        - query: "Baugenehmigung für den Bau des Krankenhauses an der Königstraße"
+
+        
 Aktuelles Datum und Uhrzeit: {formatted_current_datetime}
 
 
@@ -77,7 +95,7 @@ Nutzer Metadaten:
             region=common_config.aws_region,
             model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
             temperature=0,
-            timeout=120,  # 2 minutes
+            # timeout=120,  # 2 minutes
         )
         structured_llm = llm.with_structured_output(DeciderLlmDataModel)
         self._chain = (
@@ -85,7 +103,7 @@ Nutzer Metadaten:
                 "formatted_current_datetime": lambda x: datetime.now().strftime(
                     "%d.%m.%Y %H:%M"
                 ),
-                "user_metadata": lambda x: x.user_metadata.format_to_inner_llm_xml(),
+                "user_metadata": lambda x: x["user_metadata"].format_to_inner_llm_xml(),
                 "messages": itemgetter("messages"),
             }
             | chat_prompt_template
@@ -110,7 +128,7 @@ Nutzer Metadaten:
                     city_name="Freiburg",
                     user_name="Lorem Ipsum",
                 ),
-                "query": last_human_message.content,
+                "messages": state.messages,
             }
         )
 
@@ -129,7 +147,8 @@ Nutzer Metadaten:
                 },
             )
             ai_message = AIMessage(
-                "Toolcall", tool_calls=[tool_call], content=decider_llm_data_model.query
+                "Calling retriever tool",
+                tool_calls=[tool_call],
             )
             state.messages.append(ai_message)
 

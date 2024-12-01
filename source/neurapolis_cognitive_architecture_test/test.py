@@ -6,6 +6,7 @@ from neurapolis_cognitive_architecture import (
     MyHumanMessage,
     NeurapolisCognitiveArchitecture,
 )
+from neurapolis_retriever import QualityPreset
 
 
 async def run_cognitive_architecture():
@@ -29,7 +30,9 @@ async def run_cognitive_architecture():
         print("---")
 
     human_message = MyHumanMessage(
-        id=str(uuid4()), content="Welche Spielplätze wurden gebaut oder geplant?"
+        id=str(uuid4()),
+        content="Welche Spielplätze wurden gebaut oder geplant?",
+        quality_preset=QualityPreset.LOW,
     )
 
     await cognitive_architecture.query(
