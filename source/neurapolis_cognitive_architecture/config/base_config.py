@@ -3,4 +3,6 @@ from pydantic_settings import BaseSettings
 
 
 class BaseConfig(BaseSettings):
-    pass
+    context_window_token_limit: int = Field(
+        150_0000
+    )  # 200k would be the max for Claude 3.5 Sonnet

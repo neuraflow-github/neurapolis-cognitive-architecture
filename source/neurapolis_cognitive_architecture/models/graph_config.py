@@ -1,8 +1,8 @@
-from typing import Any, Callable, TypedDict
+from typing import Callable, TypedDict
 
-from .my_ai_message import MyAiMessage
+from neurapolis_retriever import LoaderUpdate
 
 
 class GraphConfig(TypedDict):
-    send_ai_message_to_client: Callable[[MyAiMessage], None]
-    configurable: dict[str, Any]
+    send_loader_update_to_client: Callable[[LoaderUpdate], None]
+    configurable: dict

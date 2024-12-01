@@ -8,8 +8,8 @@ from .message import Message
 
 
 class MyAiMessage(Message):
-    role: MessageRole = Field(default=MessageRole.AI, frozen=True)
-    retrieved_files: Optional[list[RetrievedFile]] = Field(default=None)
+    role: MessageRole = Field(MessageRole.AI, frozen=True)
+    retrieved_files: Optional[list[RetrievedFile]] = Field(None)
 
     def convert_to_data(self) -> dict:
         return {

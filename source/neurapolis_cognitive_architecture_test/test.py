@@ -13,7 +13,7 @@ async def run_cognitive_architecture():
 
     def send_loader_update_to_client(loader_update):
         print("---")
-        print(f"Retriever step: {loader_update.retriever_step}")
+        print(f"Retriever step: {loader_update.graph_step}")
         print(f"Search count: {loader_update.search_count}")
         print(f"Hit count: {loader_update.hit_count}")
         print(f"Relevant hit count: {loader_update.relevant_hit_count}")
@@ -28,13 +28,13 @@ async def run_cognitive_architecture():
         print(ai_message.content)
         print("---")
 
-    user_message = MyHumanMessage(
+    human_message = MyHumanMessage(
         id=str(uuid4()), content="Welche Spielplätze wurden gebaut oder geplant?"
     )
 
     await cognitive_architecture.query(
         thread_id=str(uuid4()),
-        user_message=user_message,
+        human_message=human_message,
         send_loader_update_to_client=send_loader_update_to_client,
         send_ai_message_to_client=send_ai_message_to_client,
     )

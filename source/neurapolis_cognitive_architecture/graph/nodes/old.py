@@ -55,7 +55,7 @@ async def retriever_tool(query: str, date_filter: dict, config) -> str:
         elif isinstance(x_event, list):
             retrieved_files = x_event
 
-    retrieved_files_data: list[dict[str, Any]] = []
+    retrieved_files_data: list[dict] = []
     for x_retrieved_file in retrieved_files:
         retrieved_files_data.append(x_retrieved_file.model_dump())
 

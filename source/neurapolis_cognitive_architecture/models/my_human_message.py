@@ -9,9 +9,9 @@ from .message import Message
 
 
 class MyHumanMessage(Message, HumanMessage):
-    role: MessageRole = Field(default=MessageRole.USER, frozen=True)
-    date_filter: Optional[DateFilter] = Field(default=None)
-    quality_preset: QualityPreset = Field(default=QualityPreset.MEDIUM)
+    role: MessageRole = Field(MessageRole.USER, frozen=True)
+    date_filter: Optional[DateFilter] = Field(None)
+    quality_preset: QualityPreset = Field()
 
     def convert_to_data(self) -> dict:
         return {

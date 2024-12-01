@@ -6,4 +6,5 @@ from pydantic import BaseModel
 
 
 class State(BaseModel):
-    messages: Annotated[list[BaseMessage], add_messages]
+    # messages: Annotated[list[BaseMessage], add_messages]
+    messages: list[BaseMessage]

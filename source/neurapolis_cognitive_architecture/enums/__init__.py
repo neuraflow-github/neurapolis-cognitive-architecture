@@ -1,2 +1,2 @@
-from .cogitive_architecture_step import CognitiveArchitectureStep
+from .graph_step import GraphStep
 from .message_role import MessageRole

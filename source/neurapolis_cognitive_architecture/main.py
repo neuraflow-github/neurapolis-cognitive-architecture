@@ -15,19 +15,23 @@ class NeurapolisCognitiveArchitecture:
     async def query(
         self,
         thread_id: str,
-        user_message: MyHumanMessage,
+        human_message: MyHumanMessage,
         send_loader_update_to_client: Callable[[LoaderUpdate], None],
         send_ai_message_to_client: Callable[[MyAiMessage], None],
     ):
-        # print("thread_id", thread_id)
-
-        messages: list[MyHumanMessage] = [user_message]
+        messages: list[MyHumanMessage] = [human_message]
         state = State(messages=messages)
+
         graph_config = GraphConfig(
             send_loader_update_to_client=send_loader_update_to_client,
             configurable={"thread_id": thread_id},
         )
+
         result_state = graph.invoke(state, graph_config)
+
         print("result_state", result_state)
-        last_ai_message = get_last_message_of_type(result_state.messages, MyAiMessage)
+
+        last_ai_message: MyAiMessage = get_last_message_of_type(
+            result_state.messages, MyAiMessage
+        )
         send_ai_message_to_client(last_ai_message)
