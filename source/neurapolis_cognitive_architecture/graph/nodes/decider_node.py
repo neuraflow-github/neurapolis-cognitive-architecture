@@ -17,6 +17,7 @@ from neurapolis_common import config as common_config
 from neurapolis_common import get_last_message_of_type
 from pydantic import BaseModel, Field
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 

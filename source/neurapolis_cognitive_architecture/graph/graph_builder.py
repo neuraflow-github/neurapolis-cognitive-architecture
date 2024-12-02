@@ -19,5 +19,3 @@ graph_builder.add_conditional_edges(
 graph_builder.add_edge(GraphStep.RETRIEVER.value, GraphStep.REPLIER.value)
 
 graph_builder.set_finish_point(GraphStep.REPLIER.value)
-
-graph = graph_builder.compile()

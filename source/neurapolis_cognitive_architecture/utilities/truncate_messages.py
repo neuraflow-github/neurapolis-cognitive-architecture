@@ -30,13 +30,16 @@ def truncate_messages(
         token_count = llm.get_num_tokens_from_messages(candidate_messages)
 
         if token_count <= token_limit:
-            truncated_messages.append(x_message)
+            truncated_messages.insert(1, x_message)
         else:
             if isinstance(x_message, ToolMessage):
                 # Skip the tool message
                 continue
             else:
                 break
+
+    for x_message in truncated_messages:
+        print(x_message)
 
     new_chat_prompt_value = ChatPromptValue(messages=truncated_messages)
 

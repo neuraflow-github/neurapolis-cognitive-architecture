@@ -12,6 +12,7 @@ from neurapolis_cognitive_architecture.utilities import truncate_messages
 from neurapolis_common import UserMetadata
 from neurapolis_common import config as common_config
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
@@ -65,12 +66,13 @@ Nutzer Metadaten:
             temperature=0,
             # timeout=120,  # 2 minutes
         )
+        llm_with_tools = llm.bind_tools([])
         self._chain = (
             {
                 "formatted_current_datetime": lambda x: datetime.now().strftime(
                     "%d.%m.%Y %H:%M"
                 ),
-                "user_metadata": lambda x: x.user_metadata.format_to_inner_llm_xml(),
+                "user_metadata": lambda x: x["user_metadata"].format_to_inner_llm_xml(),
                 "messages": itemgetter("messages"),
             }
             | chat_prompt_template
@@ -79,7 +81,7 @@ Nutzer Metadaten:
                     x, token_limit=config.context_window_token_limit
                 )
             )
-            | llm
+            | llm_with_tools
         )
 
     def reply(self, state: State) -> State:

@@ -2091,6 +2091,23 @@ langchain-core = ">=0.2.38,<0.4"
 msgpack = ">=1.1.0,<2.0.0"
 
 [[package]]
+name = "langgraph-checkpoint-postgres"
+version = "2.0.6"
+description = "Library with a Postgres implementation of LangGraph checkpoint saver."
+optional = false
+python-versions = "<4.0.0,>=3.9.0"
+files = [
+    {file = "langgraph_checkpoint_postgres-2.0.6-py3-none-any.whl", hash = "sha256:f1b533af10b85c22160263e68967c8caa183dec5ec2c36424c6824e201979b77"},
+    {file = "langgraph_checkpoint_postgres-2.0.6.tar.gz", hash = "sha256:ff02d0974215c72e3896cf0234a4a12404f500c6fe27964770a4254e44735dff"},
+]
+
+[package.dependencies]
+langgraph-checkpoint = ">=2.0.7,<3.0.0"
+orjson = ">=3.10.1"
+psycopg = ">=3.2.0,<4.0.0"
+psycopg-pool = ">=3.2.0,<4.0.0"
+
+[[package]]
 name = "langgraph-sdk"
 version = "0.1.40"
 description = "SDK for interacting with LangGraph API"
@@ -3309,6 +3326,43 @@ files = [
 [package.extras]
 dev = ["black", "check-manifest", "coverage", "packaging", "pylint", "pyperf", "pypinfo", "pytest-cov", "requests", "rstcheck", "ruff", "sphinx", "sphinx_rtd_theme", "toml-sort", "twine", "virtualenv", "wheel"]
 test = ["pytest", "pytest-xdist", "setuptools"]
+
+[[package]]
+name = "psycopg"
+version = "3.2.3"
+description = "PostgreSQL database adapter for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "psycopg-3.2.3-py3-none-any.whl", hash = "sha256:644d3973fe26908c73d4be746074f6e5224b03c1101d302d9a53bf565ad64907"},
+    {file = "psycopg-3.2.3.tar.gz", hash = "sha256:a5764f67c27bec8bfac85764d23c534af2c27b893550377e37ce59c12aac47a2"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.6", markers = "python_version < \"3.13\""}
+tzdata = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+binary = ["psycopg-binary (==3.2.3)"]
+c = ["psycopg-c (==3.2.3)"]
+dev = ["ast-comments (>=1.1.2)", "black (>=24.1.0)", "codespell (>=2.2)", "dnspython (>=2.1)", "flake8 (>=4.0)", "mypy (>=1.11)", "types-setuptools (>=57.4)", "wheel (>=0.37)"]
+docs = ["Sphinx (>=5.0)", "furo (==2022.6.21)", "sphinx-autobuild (>=2021.3.14)", "sphinx-autodoc-typehints (>=1.12)"]
+pool = ["psycopg-pool"]
+test = ["anyio (>=4.0)", "mypy (>=1.11)", "pproxy (>=2.7)", "pytest (>=6.2.5)", "pytest-cov (>=3.0)", "pytest-randomly (>=3.5)"]
+
+[[package]]
+name = "psycopg-pool"
+version = "3.2.4"
+description = "Connection Pool for Psycopg"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "psycopg_pool-3.2.4-py3-none-any.whl", hash = "sha256:f6a22cff0f21f06d72fb2f5cb48c618946777c49385358e0c88d062c59cbd224"},
+    {file = "psycopg_pool-3.2.4.tar.gz", hash = "sha256:61774b5bbf23e8d22bedc7504707135aaf744679f8ef9b3fe29942920746a6ed"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.6"
 
 [[package]]
 name = "ptyprocess"
@@ -4675,4 +4729,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12,<3.13"
-content-hash = "b813926682829c2cedde339caa58af38edb3f3e290f445728dbe05fd2809b608"
+content-hash = "b6855a73a2a659f68a72de3bf50f46c35fd12a8c6d4605e820df9dbfb9f9771e"
