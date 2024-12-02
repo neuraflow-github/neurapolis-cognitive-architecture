@@ -13,7 +13,7 @@ from neurapolis_cognitive_architecture.models import (
 )
 from neurapolis_common import config as common_config
 from neurapolis_common import get_last_message_of_type
-from neurapolis_retriever import LoaderUpdate, RetrievedFile
+from neurapolis_retriever import LoaderUpdate, Reference
 
 
 class NeurapolisCognitiveArchitecture:
@@ -52,13 +52,13 @@ class NeurapolisCognitiveArchitecture:
         if last_ai_message_index > 0:
             previous_message = result_state["messages"][last_ai_message_index - 1]
 
-        retrieved_files: list[RetrievedFile] = []
+        references: list[Reference] = []
         if isinstance(previous_message, ToolMessage):
-            retrieved_files = previous_message.artifact
+            references = previous_message.artifact
 
         my_ai_message = MyAiMessage(
             id=str(uuid4()),
             content=last_ai_message.content,
-            retrieved_files=retrieved_files,
+            references=references,
         )
         await send_ai_message_to_client(my_ai_message)

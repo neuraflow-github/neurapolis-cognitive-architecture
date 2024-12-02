@@ -8,7 +8,7 @@ from neurapolis_retriever import (
     LoaderUpdate,
     NeurapolisRetriever,
     QualityPreset,
-    RetrievedFile,
+    Reference,
 )
 from typing_extensions import Annotated
 
@@ -38,7 +38,7 @@ async def retrieve(
 
     retriever = NeurapolisRetriever()
 
-    retrieved_files: list[RetrievedFile] = []
+    references: list[Reference] = []
     for x_event in retriever.retrieve(
         query,
         date_filter,
@@ -49,15 +49,15 @@ async def retrieve(
                 x_event
             )  # Do not await this, to not block the graph
         elif isinstance(x_event, list):
-            retrieved_files = x_event
+            references = x_event
 
-    capped_retrieved_files = retrieved_files[: config.retrieved_file_limit]
-    inner_xml = RetrievedFile.format_multiple_to_inner_llm_xml(capped_retrieved_files)
-    xml = f"<{RetrievedFile.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{RetrievedFile.get_llm_xml_tag_name_prefix()}>"
+    capped_references = references[: config.reference_limit]
+    inner_xml = Reference.format_multiple_to_inner_llm_xml(capped_references)
+    xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
 
     logger.info(f"ToolNode: Finished retrieving")
 
-    return xml, retrieved_files
+    return xml, references
 
 
 tools = [retrieve]

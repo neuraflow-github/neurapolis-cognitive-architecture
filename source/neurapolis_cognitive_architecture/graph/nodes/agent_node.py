@@ -96,18 +96,18 @@ Nutzer Metadaten:
     #         if not isinstance(x_message, ToolMessage):
     #             reduced_messages.append(x_message)
     #             continue
-    #         retrieved_file_datas = json.loads(x_message.content)
-    #         retrieved_files: list[RetrievedFile] = []
-    #         for x_retrieved_file_data in retrieved_file_datas:
-    #             retrieved_files.append(
-    #                 RetrievedFile.model_validate(x_retrieved_file_data)
+    #         reference_datas = json.loads(x_message.content)
+    #         references: list[Reference] = []
+    #         for x_reference_data in reference_datas:
+    #             references.append(
+    #                 Reference.model_validate(x_reference_data)
     #             )
 
-    #         capped_retrieved_files = retrieved_files[: my_config.retrieved_file_limit]
-    #         inner_xml = RetrievedFile.format_multiple_to_inner_llm_xml(
-    #             capped_retrieved_files
+    #         capped_references = references[: my_config.reference_limit]
+    #         inner_xml = Reference.format_multiple_to_inner_llm_xml(
+    #             capped_references
     #         )
-    #         xml = f"<{RetrievedFile.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{RetrievedFile.get_llm_xml_tag_name_prefix()}>"
+    #         xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
 
     #         tool_message = x_message.model_copy(deep=True)
     #         tool_message.content = xml
