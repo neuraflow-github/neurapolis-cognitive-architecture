@@ -19,6 +19,13 @@ class MyAiMessage(Message):
             "retrievedFiles": (
                 None
                 if self.retrieved_files is None
-                else [x_file.convert_to_data() for x_file in self.retrieved_files]
+                else [
+                    x_retrieved_file.convert_to_data()
+                    for x_retrieved_file in self.retrieved_files
+                ]
             ),
         }
+
+    @classmethod
+    def create_from_data(cls, data: dict) -> "MyAiMessage":
+        raise NotImplementedError()

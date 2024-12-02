@@ -2,6 +2,5 @@ from enum import StrEnum
 
 
 class GraphStep(StrEnum):
-    DECIDER = "DECIDER"
+    AGENT = "AGENT"
     RETRIEVER = "RETRIEVER"
-    REPLIER = "REPLIER"

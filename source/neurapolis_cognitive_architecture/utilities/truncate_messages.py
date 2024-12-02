@@ -17,7 +17,6 @@ def truncate_messages(
 
     reversed_other_messages = reversed(messages[1:])
 
-    truncated_messages: list[BaseMessage] = [system_message]
     llm = AzureChatOpenAI(
         azure_endpoint=common_config.azure_openai_endpoint,
         api_version=common_config.openai_api_version,
@@ -25,9 +24,13 @@ def truncate_messages(
         azure_deployment="gpt-4o",
         model="gpt-4o",  # Needed for token counting
     )
+
+    truncated_messages: list[BaseMessage] = [system_message]
     for x_message in reversed_other_messages:
         candidate_messages = truncated_messages + [x_message]
         token_count = llm.get_num_tokens_from_messages(candidate_messages)
+
+        # TODO For Tool messages the next ai message also has to fit in, otherwise we can not put it in
 
         if token_count <= token_limit:
             truncated_messages.insert(1, x_message)
@@ -38,9 +41,9 @@ def truncate_messages(
             else:
                 break
 
-    for x_message in truncated_messages:
-        print(x_message)
-
     new_chat_prompt_value = ChatPromptValue(messages=truncated_messages)
+
+    for x_message in truncated_messages:
+        print(f"{x_message.type}: {x_message.content[:100]}")
 
     return new_chat_prompt_value

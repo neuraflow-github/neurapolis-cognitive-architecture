@@ -26,7 +26,7 @@ async def run_cognitive_architecture():
     def send_ai_message_to_client(ai_message: MyAiMessage):
         print("---")
         print("AI Response:")
-        print(ai_message.content)
+        print(ai_message)
         print("---")
 
     human_message = MyHumanMessage(
