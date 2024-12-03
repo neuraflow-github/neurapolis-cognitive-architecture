@@ -12,7 +12,6 @@ from neurapolis_retriever import (
 )
 from typing_extensions import Annotated
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 

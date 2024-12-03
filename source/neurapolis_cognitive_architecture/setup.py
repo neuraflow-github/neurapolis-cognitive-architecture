@@ -4,7 +4,6 @@ import logging
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from neurapolis_common import config as common_config
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 

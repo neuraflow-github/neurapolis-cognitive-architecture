@@ -13,7 +13,6 @@ from neurapolis_common import config as common_config
 
 from .tools import tools
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
