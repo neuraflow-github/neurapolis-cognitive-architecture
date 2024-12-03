@@ -4,8 +4,10 @@ from operator import itemgetter
 
 from langchain_aws import ChatBedrock
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableLambda
+from neurapolis_cognitive_architecture.config import config
 from neurapolis_cognitive_architecture.models import State
+from neurapolis_cognitive_architecture.utilities import truncate_messages
 from neurapolis_common import UserMetadata
 from neurapolis_common import config as common_config
 
@@ -82,38 +84,13 @@ Nutzer Metadaten:
                 "messages": itemgetter("messages"),
             }
             | chat_prompt_template
-            # | RunnableLambda(
-            #     lambda x: truncate_messages(
-            #         x, token_limit=config.context_window_token_limit
-            #     )
-            # )
+            | RunnableLambda(
+                lambda x: truncate_messages(
+                    x, token_limit=config.context_window_token_limit
+                )
+            )
             | tooled_llm
         )
-
-    # def _reduce_messages(self, messages: list[BaseMessage]) -> list[BaseMessage]:
-    #     reduced_messages: list[BaseMessage] = []
-    #     for x_message in messages:
-    #         if not isinstance(x_message, ToolMessage):
-    #             reduced_messages.append(x_message)
-    #             continue
-    #         reference_datas = json.loads(x_message.content)
-    #         references: list[Reference] = []
-    #         for x_reference_data in reference_datas:
-    #             references.append(
-    #                 Reference.model_validate(x_reference_data)
-    #             )
-
-    #         capped_references = references[: my_config.reference_limit]
-    #         inner_xml = Reference.format_multiple_to_inner_llm_xml(
-    #             capped_references
-    #         )
-    #         xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
-
-    #         tool_message = x_message.model_copy(deep=True)
-    #         tool_message.content = xml
-    #         reduced_messages.append(tool_message)
-
-    #     return reduced_messages
 
     def agent(self, state: State) -> dict:
         logger.info(f"{self.__class__.__name__}: Started agent")
