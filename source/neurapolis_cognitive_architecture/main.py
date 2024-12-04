@@ -41,8 +41,6 @@ class NeurapolisCognitiveArchitecture:
             graph = graph_builder.compile(checkpointer=async_postgres_saver)
             result_state: State = await graph.ainvoke(state, runnable_config)
 
-        # print("result_state", result_state)
-
         last_ai_message: AIMessage = get_last_message_of_type(
             result_state["messages"], AIMessage
         )

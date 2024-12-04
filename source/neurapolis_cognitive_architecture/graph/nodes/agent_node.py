@@ -92,7 +92,7 @@ Nutzer Metadaten:
         )
 
     def agent(self, state: State) -> dict:
-        logger.info(f"{self.__class__.__name__}: Started agent")
+        logger.info(f"{self.__class__.__name__}: Started")
 
         # print(len(state["messages"]))
 
@@ -109,6 +109,6 @@ Nutzer Metadaten:
             }
         )
 
-        logger.info(f"{self.__class__.__name__}: Finished agent")
+        logger.info(f"{self.__class__.__name__}: Finished")
 
         return {"messages": [response_message]}

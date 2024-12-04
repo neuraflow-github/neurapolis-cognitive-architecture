@@ -1,4 +1,5 @@
 import copy
+import logging
 
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
@@ -7,9 +8,13 @@ from neurapolis_common import get_last_message_of_type
 
 from .tools import retrieve
 
+logger = logging.getLogger()
+
 
 class RetrieverNode:
     async def retrieve(self, state: State, config: RunnableConfig) -> dict:
+        logger.info(f"{self.__class__.__name__}: Started")
+
         last_my_human_message: MyHumanMessage = get_last_message_of_type(
             state["messages"], MyHumanMessage
         )
@@ -30,5 +35,7 @@ class RetrieverNode:
         ]["send_loader_update_to_client"]
 
         tool_message: ToolMessage = await retrieve.ainvoke(copied_tool_call)
+
+        logger.info(f"{self.__class__.__name__}: Finished")
 
         return {"messages": [tool_message]}

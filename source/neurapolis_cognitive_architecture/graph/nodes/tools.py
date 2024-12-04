@@ -33,8 +33,6 @@ async def retrieve(
         query: Die Suchanfrage an das Nachschlagetool.
     """
 
-    logger.info(f"ToolNode: Started retrieving")
-
     retriever = NeurapolisRetriever()
 
     references: list[Reference] = []
@@ -53,8 +51,6 @@ async def retrieve(
     capped_references = references[: config.reference_limit]
     inner_xml = Reference.format_multiple_to_inner_llm_xml(capped_references)
     xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
-
-    logger.info(f"ToolNode: Finished retrieving")
 
     return xml, references
 

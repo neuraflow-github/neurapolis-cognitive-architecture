@@ -9,7 +9,7 @@ from .message import Message
 
 
 class MyHumanMessage(Message, HumanMessage):
-    role: MessageRole = Field(MessageRole.USER, frozen=True)
+    role: MessageRole = Field(MessageRole.HUMAN, frozen=True)
     date_filter: Optional[DateFilter] = Field(None)
     quality_preset: QualityPreset = Field()
 
