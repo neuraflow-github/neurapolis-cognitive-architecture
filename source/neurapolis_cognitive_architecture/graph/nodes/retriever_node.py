@@ -1,41 +1,41 @@
-import copy
-import logging
+# import copy
+# import logging
 
-from langchain_core.messages import AIMessage, ToolMessage
-from langchain_core.runnables import RunnableConfig
-from neurapolis_cognitive_architecture.models import MyHumanMessage, State
-from neurapolis_common import get_last_message_of_type
+# from langchain_core.messages import AIMessage, ToolMessage
+# from langchain_core.runnables import RunnableConfig
+# from neurapolis_cognitive_architecture.models import MyHumanMessage, State
+# from neurapolis_common import get_last_message_of_type
 
-from .tools import retrieve
+# from .tools import retrieve
 
-logger = logging.getLogger()
+# logger = logging.getLogger()
 
 
-class RetrieverNode:
-    async def retrieve(self, state: State, config: RunnableConfig) -> dict:
-        logger.info(f"{self.__class__.__name__}: Started")
+# class RetrieverNode:
+#     async def retrieve(self, state: State, config: RunnableConfig) -> dict:
+#         logger.info(f"{self.__class__.__name__}: Started")
 
-        last_my_human_message: MyHumanMessage = get_last_message_of_type(
-            state["messages"], MyHumanMessage
-        )
-        last_ai_message: AIMessage = get_last_message_of_type(
-            state["messages"], AIMessage
-        )
+#         last_my_human_message: MyHumanMessage = get_last_message_of_type(
+#             state["messages"], MyHumanMessage
+#         )
+#         last_ai_message: AIMessage = get_last_message_of_type(
+#             state["messages"], AIMessage
+#         )
 
-        tool_call = last_ai_message.tool_calls[0]
+#         tool_call = last_ai_message.tool_calls[0]
 
-        # Inject the necessary args
-        copied_tool_call = copy.deepcopy(tool_call)
-        copied_tool_call["args"]["date_filter"] = last_my_human_message.date_filter
-        copied_tool_call["args"][
-            "quality_preset"
-        ] = last_my_human_message.quality_preset
-        copied_tool_call["args"]["send_loader_update_to_client"] = config[
-            "configurable"
-        ]["send_loader_update_to_client"]
+#         # Inject the necessary args
+#         copied_tool_call = copy.deepcopy(tool_call)
+#         copied_tool_call["args"]["date_filter"] = last_my_human_message.date_filter
+#         copied_tool_call["args"][
+#             "quality_preset"
+#         ] = last_my_human_message.quality_preset
+#         copied_tool_call["args"]["send_loader_update_to_client"] = config[
+#             "configurable"
+#         ]["send_loader_update_to_client"]
 
-        tool_message: ToolMessage = await retrieve.ainvoke(copied_tool_call)
+#         tool_message: ToolMessage = await retrieve.ainvoke(copied_tool_call)
 
-        logger.info(f"{self.__class__.__name__}: Finished")
+#         logger.info(f"{self.__class__.__name__}: Finished")
 
-        return {"messages": [tool_message]}
+#         return {"messages": [tool_message]}

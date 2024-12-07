@@ -1,16 +1,13 @@
 import logging
-from typing import Callable, Optional
 
-from langchain_core.tools import InjectedToolArg, tool
+from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
 from langchain_core.tools.base import BaseTool
-from neurapolis_cognitive_architecture.config import config
-from neurapolis_retriever import (
-    DateFilter,
-    LoaderUpdate,
-    NeurapolisRetriever,
-    QualityPreset,
-    Reference,
-)
+from langgraph.prebuilt import InjectedState, ToolNode
+from neurapolis_cognitive_architecture.config import config as my_config
+from neurapolis_cognitive_architecture.models import MyHumanMessage, State
+from neurapolis_common import get_last_message_of_type
+from neurapolis_retriever import LoaderUpdate, NeurapolisRetriever, Reference
 from typing_extensions import Annotated
 
 logger = logging.getLogger()
@@ -21,11 +18,8 @@ logger = logging.getLogger()
 @tool(response_format="content_and_artifact")
 async def retrieve(
     query: str,
-    date_filter: Annotated[Optional[DateFilter], InjectedToolArg],
-    quality_preset: Annotated[QualityPreset, InjectedToolArg],
-    send_loader_update_to_client: Annotated[
-        Callable[[LoaderUpdate], None], InjectedToolArg
-    ],
+    config: RunnableConfig,
+    state: Annotated[State, InjectedState],
 ) -> any:
     """
     Mit dem Nachschlagetool kannst du relevante Informationen aus dem RIS herausfinden.
@@ -34,22 +28,28 @@ async def retrieve(
         query: Die Suchanfrage an das Nachschlagetool.
     """
 
+    print(config)
+    print(".--")
+    print(config["configurable"])
+
+    last_human_message: MyHumanMessage = get_last_message_of_type(
+        state["messages"], MyHumanMessage
+    )
+
     retriever = NeurapolisRetriever()
 
     references: list[Reference] = []
     for x_event in retriever.retrieve(
         query,
-        date_filter,
-        quality_preset,
+        last_human_message.date_filter,
+        last_human_message.quality_preset,
     ):
         if isinstance(x_event, LoaderUpdate):
-            await send_loader_update_to_client(
-                x_event
-            )  # Do not await this, to not block the graph
+            await config["configurable"]["send_loader_update_to_client"](x_event)
         elif isinstance(x_event, list):
             references = x_event
 
-    capped_references = references[: config.reference_limit]
+    capped_references = references[: my_config.reference_limit]
     inner_xml = Reference.format_multiple_to_inner_llm_xml(capped_references)
     xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
 
@@ -57,3 +57,5 @@ async def retrieve(
 
 
 tools: list[BaseTool] = [retrieve]
+
+tool_node = ToolNode(tools)

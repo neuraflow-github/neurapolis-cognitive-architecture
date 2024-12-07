@@ -39,7 +39,7 @@ Aufgabe:
     - es sich um eine simple Konversationsfrage wie "Hallo, wie geht es dir?" oder "Welchen Tag haben wir heute?" geht.
     - es sich um eine Frage handelt, dessen Antwort sich schon detailliert im Chatverlauf befindet.
     - für Zusammenfassungen oder Ähnlichem von Informationen, welche sich schon im Chatverlauf befinden.
-- Wenn du keine relevanten Informationen mit dem Nachschlagetool finden konntest, oder das Nachschlagetool nicht funktioniert, gib dies zu ohne dir selbst eine Antwort auszudenken.
+- Wenn du keine relevanten Informationen mit dem Nachschlagetool finden konntest, oder das Nachschlagetool nicht funktioniert, gib dies zu ohne dir selbst eine Antwort auszudenken oder weitere Ideen zu geben.
 - Haluziniere auf keinen Fall eine Antwort, welche nicht faktengestützt durch das Nachschlagetool ist.
 - Die Suchanfrage an das Nachschlagetool muss in deutsch sein, auch wenn die Nutzeranfrage in einer anderen Sprache ist.
 - Die Suchanfrage sollte außerdem alle Informationen aus der Nutzeranfrage enthalten, aber prägnant sein. Wenn der Nutzer z. B. Dinge doppelt und dreifach beschreibt, dann sollte die Suchanfrage die Information nur einmal enthalten.
@@ -83,21 +83,21 @@ Nutzer Metadaten:
                 "messages": itemgetter("messages"),
             }
             | chat_prompt_template
-            | RunnableLambda(
-                lambda x: truncate_messages(
-                    x, token_limit=config.context_window_token_limit
-                )
-            )
+            # | RunnableLambda(
+            #     lambda x: truncate_messages(
+            #         x, token_limit=config.context_window_token_limit
+            #     )
+            # )
             | tooled_llm
         )
 
     def agent(self, state: State) -> dict:
         logger.info(f"{self.__class__.__name__}: Started")
 
-        # print(len(state["messages"]))
+        print(len(state["messages"]))
 
-        # for x_message in state["messages"]:
-        #     print(x_message.type, x_message.content[:100], len(x_message.content))
+        for x_message in state["messages"]:
+            print(x_message.type, x_message.content[:100], len(x_message.content))
 
         response_message = self._chain.invoke(
             {

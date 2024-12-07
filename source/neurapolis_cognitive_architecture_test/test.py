@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from uuid import uuid4
 
 from neurapolis_cognitive_architecture import (
@@ -6,28 +7,33 @@ from neurapolis_cognitive_architecture import (
     MyHumanMessage,
     NeurapolisCognitiveArchitecture,
 )
-from neurapolis_retriever import QualityPreset
+from neurapolis_retriever import DateLoaderLogEntry, QualityPreset, TextLoaderLogEntry
+
+logger = logging.getLogger(__name__)
 
 
 async def run_cognitive_architecture():
     cognitive_architecture = NeurapolisCognitiveArchitecture()
 
-    def send_loader_update_to_client(loader_update):
-        print("---")
-        print(f"Retriever step: {loader_update.graph_step}")
-        print(f"Search count: {loader_update.search_count}")
-        print(f"Hit count: {loader_update.hit_count}")
-        print(f"Relevant hit count: {loader_update.relevant_hit_count}")
-        print("Log entries:")
+    async def send_loader_update_to_client(loader_update):
+        logger.info("---")
+        logger.info(f"Retriever step: {loader_update.graph_step}")
+        logger.info(f"Search count: {loader_update.search_count}")
+        logger.info(f"Hit count: {loader_update.hit_count}")
+        logger.info(f"Relevant hit count: {loader_update.relevant_hit_count}")
+        logger.info("Log entries:")
         for x_log_entry in loader_update.log_entries:
-            print(f"  - {x_log_entry.text}")
-        print("---")
+            if isinstance(x_log_entry, TextLoaderLogEntry):
+                logger.info(f"  - {x_log_entry.text}")
+            elif isinstance(x_log_entry, DateLoaderLogEntry):
+                logger.info(f"  - {x_log_entry.date}")
+        logger.info("---")
 
-    def send_ai_message_to_client(ai_message: MyAiMessage):
-        print("---")
-        print("AI Response:")
-        print(ai_message)
-        print("---")
+    async def send_ai_message_to_client(ai_message: MyAiMessage):
+        logger.info("---")
+        logger.info("AI Response:")
+        logger.info(ai_message)
+        logger.info("---")
 
     human_message = MyHumanMessage(
         id=str(uuid4()),
