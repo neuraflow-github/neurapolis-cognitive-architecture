@@ -2,6 +2,7 @@ import logging
 from typing import Callable, Optional
 
 from langchain_core.tools import InjectedToolArg, tool
+from langchain_core.tools.base import BaseTool
 from neurapolis_cognitive_architecture.config import config
 from neurapolis_retriever import (
     DateFilter,
@@ -55,4 +56,4 @@ async def retrieve(
     return xml, references
 
 
-tools = [retrieve]
+tools: list[BaseTool] = [retrieve]

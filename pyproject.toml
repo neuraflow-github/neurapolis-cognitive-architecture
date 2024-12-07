@@ -24,6 +24,7 @@ pytz = "^2024.2"
 neurapolis-retriever = {path = "../neurapolis-retriever", develop = true}
 langchain-anthropic = "^0.2.3"
 langgraph-checkpoint-postgres = "^2.0.6"
+neurapolis-common = {path = "../neurapolis-common", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"

@@ -8,8 +8,8 @@ from langchain_core.runnables import Runnable, RunnableLambda
 from neurapolis_cognitive_architecture.config import config
 from neurapolis_cognitive_architecture.models import State
 from neurapolis_cognitive_architecture.utilities import truncate_messages
-from neurapolis_common import UserMetadata
 from neurapolis_common import config as common_config
+from neurapolis_retriever import UserMetadata
 
 from .tools import tools
 
@@ -37,7 +37,7 @@ Aufgabe:
 - Der Standardfall ist, dass nachgeschlagen werden muss, da die meisten Nutzeranfragen auf Informationen abzielen, welche sich im RIS befinden.
 - Du musst nicht Nachschlagen, wenn
     - es sich um eine simple Konversationsfrage wie "Hallo, wie geht es dir?" oder "Welchen Tag haben wir heute?" geht.
-    - es sich um eine Frage zu dem RIS handelt, dessen Antwort sich schon detailliert im Chatverlauf befindet.
+    - es sich um eine Frage handelt, dessen Antwort sich schon detailliert im Chatverlauf befindet.
     - für Zusammenfassungen oder Ähnlichem von Informationen, welche sich schon im Chatverlauf befinden.
 - Wenn du keine relevanten Informationen mit dem Nachschlagetool finden konntest, oder das Nachschlagetool nicht funktioniert, gib dies zu ohne dir selbst eine Antwort auszudenken.
 - Haluziniere auf keinen Fall eine Antwort, welche nicht faktengestützt durch das Nachschlagetool ist.
