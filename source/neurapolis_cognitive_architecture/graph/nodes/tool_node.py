@@ -38,15 +38,15 @@ async def retrieve(
     date_filter: Optional[DateFilter],
     quality_preset: QualityPreset,
     send_loader_update_to_client: Callable[[LoaderUpdate], None],
-) -> AsyncGenerator[tuple[str, list[Reference]], None]:
+) -> tuple[str, list[Reference]]:
     retriever = NeurapolisRetriever()
     references: list[Reference] = []
-
     async for x_event in retriever.retrieve(query, date_filter, quality_preset):
         if isinstance(x_event, LoaderUpdate):
-            # Use asyncio.create_task to not block
             await send_loader_update_to_client(x_event)
-            await asyncio.sleep(0)  # Give control back to event loop
+            await asyncio.sleep(
+                0
+            )  # Give control back to event loop, so the loader update gets sent
         elif isinstance(x_event, list):
             references = x_event
 
