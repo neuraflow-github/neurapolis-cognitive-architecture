@@ -58,7 +58,10 @@ class NeurapolisCognitiveArchitecture:
         print(type(previous_message))
 
         references: list[Reference] = []
-        if isinstance(previous_message, ToolMessage):
+        if (
+            isinstance(previous_message, ToolMessage)
+            and previous_message.artifact is not None
+        ):
             references = previous_message.artifact
 
         my_ai_message = MyAiMessage(
