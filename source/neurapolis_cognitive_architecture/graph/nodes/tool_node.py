@@ -28,10 +28,6 @@ async def retrieve(
         query: Die Suchanfrage an das Nachschlagetool.
     """
 
-    print(config)
-    print(".--")
-    print(config["configurable"])
-
     last_human_message: MyHumanMessage = get_last_message_of_type(
         state["messages"], MyHumanMessage
     )
@@ -39,13 +35,16 @@ async def retrieve(
     retriever = NeurapolisRetriever()
 
     references: list[Reference] = []
-    for x_event in retriever.retrieve(
+    async for x_event in retriever.retrieve(
         query,
         last_human_message.date_filter,
         last_human_message.quality_preset,
     ):
+        print("UPDATE")
         if isinstance(x_event, LoaderUpdate):
+            print("SENDING LOADER UPDATE TO CLIENT")
             await config["configurable"]["send_loader_update_to_client"](x_event)
+            pass
         elif isinstance(x_event, list):
             references = x_event
 
