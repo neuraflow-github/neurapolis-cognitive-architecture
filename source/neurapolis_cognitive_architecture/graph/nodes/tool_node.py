@@ -23,7 +23,7 @@ async def retrieve(
     state: Annotated[State, InjectedState],
 ) -> any:
     """
-    Mit dem Nachschlagetool kannst du relevante Informationen aus dem RIS herausfinden.
+    Mit dem Nachschlagetool kannst du relevante Informationen aus dem RIS finden.
 
     Args:
         query: Die Suchanfrage an das Nachschlagetool.
@@ -41,9 +41,7 @@ async def retrieve(
         last_human_message.date_filter,
         last_human_message.quality_preset,
     ):
-        print("UPDATE")
         if isinstance(x_event, LoaderUpdate):
-            print("SENDING LOADER UPDATE TO CLIENT")
             await config["configurable"]["send_loader_update_to_client"](x_event)
             await asyncio.sleep(
                 0
