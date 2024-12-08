@@ -3,12 +3,12 @@ from langgraph.prebuilt import tools_condition
 from neurapolis_cognitive_architecture.enums import GraphStep
 from neurapolis_cognitive_architecture.models import GraphConfig, State
 
-from .nodes import AgentNode, tool_node
+from .nodes import AgentNode, RetrieverNode
 
 graph_builder = StateGraph(State, GraphConfig)
 
 graph_builder.add_node(GraphStep.AGENT.value, AgentNode().agent)
-graph_builder.add_node(GraphStep.RETRIEVER.value, tool_node)
+graph_builder.add_node(GraphStep.RETRIEVER.value, RetrieverNode().retrieve)
 
 graph_builder.set_entry_point(GraphStep.AGENT.value)
 

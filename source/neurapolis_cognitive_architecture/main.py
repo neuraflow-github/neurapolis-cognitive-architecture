@@ -50,6 +50,13 @@ class NeurapolisCognitiveArchitecture:
         if last_ai_message_index > 0:
             previous_message = result_state["messages"][last_ai_message_index - 1]
 
+        print("All message types:")
+        for x_message in result_state["messages"]:
+            print(type(x_message))
+
+        print("Previous message type:")
+        print(type(previous_message))
+
         references: list[Reference] = []
         if isinstance(previous_message, ToolMessage):
             references = previous_message.artifact
