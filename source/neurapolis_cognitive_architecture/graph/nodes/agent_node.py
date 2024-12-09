@@ -72,6 +72,7 @@ Nutzer Metadaten:
             region=common_config.aws_region,
             model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
             temperature=0,
+            max_tokens=4096,
             # timeout=120,  # 2 minutes
         )
         tooled_llm = llm.bind_tools(tools)
