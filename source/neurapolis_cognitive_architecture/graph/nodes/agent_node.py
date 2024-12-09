@@ -92,14 +92,14 @@ Nutzer Metadaten:
             | tooled_llm
         )
 
-    def agent(self, state: State) -> dict:
+    async def agent(self, state: State) -> dict:
         logger.info(f"{self.__class__.__name__}: Started")
 
         # print(len(state["messages"]))
         # for x_message in state["messages"]:
         #     print(x_message.type, x_message.content[:100], len(x_message.content))
 
-        response_message = self._chain.invoke(
+        response_message = await self._chain.ainvoke(
             {
                 "user_metadata": UserMetadata(
                     city_name="Freiburg",
