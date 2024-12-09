@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime
 from operator import itemgetter
@@ -72,7 +73,7 @@ Nutzer Metadaten:
             region=common_config.aws_region,
             model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
             temperature=0,
-            max_tokens=4096,
+            max_tokens=2048,
             # timeout=120,  # 2 minutes
         )
         tooled_llm = llm.bind_tools(tools)
@@ -100,6 +101,9 @@ Nutzer Metadaten:
         # for x_message in state["messages"]:
         #     print(x_message.type, x_message.content[:100], len(x_message.content))
 
+        await asyncio.sleep(
+            0
+        )  # Give control back to event loop, so the loader update gets sent
         response_message = await self._chain.ainvoke(
             {
                 "user_metadata": UserMetadata(
@@ -109,6 +113,9 @@ Nutzer Metadaten:
                 "messages": state["messages"],
             }
         )
+        await asyncio.sleep(
+            0
+        )  # Give control back to event loop, so the loader update gets sent
 
         logger.info(f"{self.__class__.__name__}: Finished")
 
