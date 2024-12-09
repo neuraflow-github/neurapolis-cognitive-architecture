@@ -14,10 +14,10 @@ langgraph = "^0.2.34"
 langchain-core = "^0.3.9"
 langgraph-checkpoint = "^2.0.1"
 langserve = "^0.3.0"
-neurapolis-retriever = {path = "../neurapolis-retriever", develop = true}
+neurapolis-retriever = { git = "https://github.com/neuraflow-github/neurapolis-retriever.git" }
 langchain-anthropic = "^0.2.3"
 langgraph-checkpoint-postgres = "^2.0.6"
-neurapolis-common = {path = "../neurapolis-common", develop = true}
+neurapolis-common = { git = "https://github.com/neuraflow-github/neurapolis-common.git" }
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
