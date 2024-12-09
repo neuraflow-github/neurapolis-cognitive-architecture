@@ -2569,7 +2569,7 @@ tiktoken = "^0.8.0"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-common.git"
 reference = "HEAD"
-resolved_reference = "13e02653872900c35bb84c4adf7f0accd245b36a"
+resolved_reference = "db5abb41fa512ede8c2a6f220ed32d6e0346bf74"
 
 [[package]]
 name = "neurapolis-retriever"
@@ -2597,7 +2597,7 @@ rich = "^13.8.1"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-retriever.git"
 reference = "HEAD"
-resolved_reference = "db5df75dda5d65dd48f79f498fcc03928b6892a3"
+resolved_reference = "05dc6e13d0dec193f015d42b1b28322368fe7517"
 
 [[package]]
 name = "numpy"
