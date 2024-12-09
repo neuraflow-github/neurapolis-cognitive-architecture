@@ -18,6 +18,7 @@ neurapolis-retriever = { git = "https://github.com/neuraflow-github/neurapolis-r
 langchain-anthropic = "^0.2.3"
 langgraph-checkpoint-postgres = "^2.0.6"
 neurapolis-common = { git = "https://github.com/neuraflow-github/neurapolis-common.git" }
+psycopg-binary = "^3.2.3"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
