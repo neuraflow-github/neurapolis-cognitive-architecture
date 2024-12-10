@@ -1,9 +1,9 @@
-import asyncio
 import logging
 from datetime import datetime
 from operator import itemgetter
 
 from langchain_aws import ChatBedrock
+from langchain_core.messages import ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable, RunnableLambda
 from neurapolis_cognitive_architecture.config import config
@@ -86,20 +86,27 @@ Nutzer Metadaten:
                 "messages": itemgetter("messages"),
             }
             | chat_prompt_template
-            # | RunnableLambda(
-            #     lambda x: truncate_messages(
-            #         x, token_limit=config.context_window_token_limit
-            #     )
-            # )
+            | RunnableLambda(
+                lambda x: truncate_messages(
+                    x, token_limit=config.context_window_token_limit
+                )
+            )
             | tooled_llm
         )
 
     async def agent(self, state: State) -> dict:
         logger.info(f"{self.__class__.__name__}: Started")
 
-        # print(len(state["messages"]))
+        # logger.info(len(state["messages"]))
         # for x_message in state["messages"]:
-        #     print(x_message.type, x_message.content[:100], len(x_message.content))
+        #     logger.info(x_message.type, x_message.content[:100], len(x_message.content))
+
+        # Log tool call errors
+        for x_message in state["messages"]:
+            if not isinstance(x_message, ToolMessage) or x_message.status != "error":
+                continue
+            logger.error("Failed calling tool")
+            logger.error(x_message.content)
 
         response_message = await self._chain.ainvoke(
             {
