@@ -15,7 +15,7 @@ class MyAiMessage(Message):
             "role": self.role.value,
             "content": self.content,
             "references": [
-                x_reference.convert_to_data() for x_reference in self.references
+                x_reference.convert_to_data() for x_reference in self.references[:5]
             ],
         }
 
