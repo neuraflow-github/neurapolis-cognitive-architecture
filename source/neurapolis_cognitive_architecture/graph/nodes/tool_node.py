@@ -48,10 +48,10 @@ async def retrieve(
             )  # Give control back to event loop, so the loader update gets sent
             pass
         elif isinstance(x_event, list):
-            references = x_event
+            references = x_event[: my_config.reference_limit]
 
-    capped_references = references[: my_config.reference_limit]
-    inner_xml = Reference.format_multiple_to_inner_llm_xml(capped_references)
+    llm_context_references = references[: my_config.llm_context_reference_limit]
+    inner_xml = Reference.format_multiple_to_inner_llm_xml(llm_context_references)
     xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
 
     return xml, references
