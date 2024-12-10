@@ -101,9 +101,6 @@ Nutzer Metadaten:
         # for x_message in state["messages"]:
         #     print(x_message.type, x_message.content[:100], len(x_message.content))
 
-        await asyncio.sleep(
-            0
-        )  # Give control back to event loop, so the loader update gets sent
         response_message = await self._chain.ainvoke(
             {
                 "user_metadata": UserMetadata(
@@ -113,9 +110,6 @@ Nutzer Metadaten:
                 "messages": state["messages"],
             }
         )
-        await asyncio.sleep(
-            0
-        )  # Give control back to event loop, so the loader update gets sent
 
         logger.info(f"{self.__class__.__name__}: Finished")
 

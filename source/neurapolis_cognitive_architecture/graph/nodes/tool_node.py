@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from langchain_core.runnables import RunnableConfig
@@ -43,10 +42,6 @@ async def retrieve(
     ):
         if isinstance(x_event, LoaderUpdate):
             await config["configurable"]["send_loader_update_to_client"](x_event)
-            await asyncio.sleep(
-                0
-            )  # Give control back to event loop, so the loader update gets sent
-            pass
         elif isinstance(x_event, list):
             references = x_event[: my_config.reference_limit]
 
