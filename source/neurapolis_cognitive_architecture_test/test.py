@@ -9,31 +9,29 @@ from neurapolis_cognitive_architecture import (
 )
 from neurapolis_retriever import DateLoaderLogEntry, QualityPreset, TextLoaderLogEntry
 
-logger = logging.getLogger(__name__)
-
 
 async def run_cognitive_architecture():
     cognitive_architecture = NeurapolisCognitiveArchitecture()
 
     async def send_loader_update_to_client(loader_update):
-        logger.info("---")
-        logger.info(f"Retriever step: {loader_update.graph_step}")
-        logger.info(f"Search count: {loader_update.search_count}")
-        logger.info(f"Hit count: {loader_update.hit_count}")
-        logger.info(f"Relevant hit count: {loader_update.relevant_hit_count}")
-        logger.info("Log entries:")
+        logging.info("---")
+        logging.info(f"Retriever step: {loader_update.graph_step}")
+        logging.info(f"Search count: {loader_update.search_count}")
+        logging.info(f"Hit count: {loader_update.hit_count}")
+        logging.info(f"Relevant hit count: {loader_update.relevant_hit_count}")
+        logging.info("Log entries:")
         for x_log_entry in loader_update.log_entries:
             if isinstance(x_log_entry, TextLoaderLogEntry):
-                logger.info(f"  - {x_log_entry.text}")
+                logging.info(f"  - {x_log_entry.text}")
             elif isinstance(x_log_entry, DateLoaderLogEntry):
-                logger.info(f"  - {x_log_entry.date}")
-        logger.info("---")
+                logging.info(f"  - {x_log_entry.date}")
+        logging.info("---")
 
     async def send_ai_message_to_client(ai_message: MyAiMessage):
-        logger.info("---")
-        logger.info("AI Response:")
-        logger.info(ai_message)
-        logger.info("---")
+        logging.info("---")
+        logging.info("AI Response:")
+        logging.info(ai_message)
+        logging.info("---")
 
     human_message = MyHumanMessage(
         id=str(uuid4()),

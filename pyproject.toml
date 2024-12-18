@@ -20,6 +20,7 @@ langgraph-checkpoint-postgres = "^2.0.6"
 neurapolis-common = { git = "https://github.com/neuraflow-github/neurapolis-common.git" }
 psycopg-binary = "^3.2.3"
 langchain-aws = "^0.2.9"
+bugsnag = "^4.7.1"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"

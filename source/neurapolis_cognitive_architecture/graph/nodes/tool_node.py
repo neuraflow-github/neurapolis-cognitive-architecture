@@ -1,5 +1,6 @@
 import logging
 
+import bugsnag
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from langchain_core.tools.base import BaseTool
@@ -9,8 +10,6 @@ from neurapolis_cognitive_architecture.models import MyHumanMessage, State
 from neurapolis_common import get_last_message_of_type
 from neurapolis_retriever import LoaderUpdate, NeurapolisRetriever, Reference
 from typing_extensions import Annotated
-
-logger = logging.getLogger()
 
 
 # Langgraph way of injecting tool args: https://langchain-ai.github.io/langgraph/how-tos/pass-run-time-values-to-tools/?h=tools#define-the-tools
@@ -28,26 +27,35 @@ async def retrieve(
         query: Die Suchanfrage an das Nachschlagetool.
     """
 
-    last_human_message: MyHumanMessage = get_last_message_of_type(
-        state["messages"], MyHumanMessage
-    )
+    logging.info("ToolNode: Started retrieving")
 
-    retriever = NeurapolisRetriever()
+    try:
+        last_human_message: MyHumanMessage = get_last_message_of_type(
+            state["messages"], MyHumanMessage
+        )
 
-    references: list[Reference] = []
-    async for x_event in retriever.retrieve(
-        query,
-        last_human_message.date_filter,
-        last_human_message.quality_preset,
-    ):
-        if isinstance(x_event, LoaderUpdate):
-            await config["configurable"]["send_loader_update_to_client"](x_event)
-        elif isinstance(x_event, list):
-            references = x_event[: my_config.reference_limit]
+        retriever = NeurapolisRetriever()
 
-    llm_context_references = references[: my_config.llm_context_reference_limit]
-    inner_xml = Reference.format_multiple_to_inner_llm_xml(llm_context_references)
-    xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
+        references: list[Reference] = []
+        async for x_event in retriever.retrieve(
+            query,
+            last_human_message.date_filter,
+            last_human_message.quality_preset,
+        ):
+            if isinstance(x_event, LoaderUpdate):
+                await config["configurable"]["send_loader_update_to_client"](x_event)
+            elif isinstance(x_event, list):
+                references = x_event[: my_config.reference_limit]
+
+        capped_references = references[: my_config.llm_context_reference_limit]
+        inner_xml = Reference.format_multiple_to_inner_llm_xml(capped_references)
+        xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
+    except Exception as exception:
+        bugsnag.notify(exception)
+
+        raise exception
+
+    logging.info("ToolNode: Finished retrieving")
 
     return xml, references
 

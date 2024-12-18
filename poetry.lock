@@ -262,6 +262,23 @@ urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >
 crt = ["awscrt (==0.22.0)"]
 
 [[package]]
+name = "bugsnag"
+version = "4.7.1"
+description = "Automatic error monitoring for django, flask, etc."
+optional = false
+python-versions = "<4,>=3.5"
+files = [
+    {file = "bugsnag-4.7.1-py3-none-any.whl", hash = "sha256:4537ff3c200890d26e28079e31729c041a9ffe84a803860ea8adefe535aac7df"},
+    {file = "bugsnag-4.7.1.tar.gz", hash = "sha256:98408fe17d4a7f300a56535407a6448b9844d9b528c44527908868fc3646e873"},
+]
+
+[package.dependencies]
+webob = "*"
+
+[package.extras]
+flask = ["blinker", "flask"]
+
+[[package]]
 name = "cachetools"
 version = "5.5.0"
 description = "Extensible memoizing collections and decorators"
@@ -4593,6 +4610,21 @@ files = [
 ]
 
 [[package]]
+name = "webob"
+version = "1.8.9"
+description = "WSGI request and response object"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "WebOb-1.8.9-py2.py3-none-any.whl", hash = "sha256:45e34c58ed0c7e2ecd238ffd34432487ff13d9ad459ddfd77895e67abba7c1f9"},
+    {file = "webob-1.8.9.tar.gz", hash = "sha256:ad6078e2edb6766d1334ec3dee072ac6a7f95b1e32ce10def8ff7f0f02d56589"},
+]
+
+[package.extras]
+docs = ["Sphinx (>=1.7.5)", "pylons-sphinx-themes"]
+testing = ["coverage", "pytest (>=3.1.0)", "pytest-cov", "pytest-xdist"]
+
+[[package]]
 name = "win32-setctime"
 version = "1.2.0"
 description = "A small Python utility to set file creation time on Windows"
@@ -4705,4 +4737,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12,<3.13"
-content-hash = "a642f078ab1485ffff3d4a1111e29af27915d71fcb1c927aece2880678217bd6"
+content-hash = "fa30984d0f5a1e5aa84bdc36fe8062a5a4685aad887bde2b73a6ccec1e0b0bee"
