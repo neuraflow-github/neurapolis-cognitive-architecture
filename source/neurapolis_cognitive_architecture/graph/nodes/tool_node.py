@@ -51,6 +51,7 @@ async def retrieve(
         inner_xml = Reference.format_multiple_to_inner_llm_xml(capped_references)
         xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
     except Exception as exception:
+        logging.error("ToolNode: Failed", exc_info=True)
         bugsnag.notify(exception)
 
         raise exception

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from operator import itemgetter
 
+import bugsnag
 from langchain_aws import ChatBedrock
 from langchain_core.messages import ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -21,7 +22,7 @@ class AgentNode:
     def __init__(self):
         prompt_template_string = """Generell:
 
-- Du bist Teil einer Retrieval Augmented Generation Anwendung. Diese besteht aus einem KI-Agenten, welcher aus mehreren LLM-Modulen besteht, welche zusammenarbeiten, um Nutzeranfragen zum Rats Informationssystem (RIS) zu beantworten.
+- Du bist Teil einer Retrieval Augmented Generation Anwendung zur Durchsuchung eines Rats-Informations-Systems (RIS). Genauer bist du Teil des KI-Agentens, welcher aus mehreren LLM-Modulen besteht, welche zusammenarbeiten, um Nutzeranfragen zu dem RIS zu beantworten.
 - Das RIS ist ein internes System für Politiker und städtische Mitarbeiter, das ihnen bei ihrer Arbeit hilft. Es ist eine Datenbank, welche Informationen einer bestimmten Stadt über Organisationen, Personen, Sitzungen, Dateien usw. enthält.
 - Ein menschlicher Mitarbeiter kommt zu dem KI-Agenten mit einer Frage, dessen Antworten sich in der Datenbank verstecken und ihr müsst die Frage so gut wie möglich beantworten.
 - Zur einfachen Durchsuchbarkeit wurden viele Daten durch ein Embeddingmodel als Vektoren embedded.
@@ -29,7 +30,7 @@ class AgentNode:
 
 Aufgabe:
 
-- Du bist der "Neurapolis"-Mitarbeiter in dem KI-Agenten und heißt "Neurapolis". Gib niemals vor, jemand anderes zu sein oder andere Personen zu imitieren.
+- Du bist der "neurapolis"-Mitarbeiter in dem KI-Agenten und heißt "neurapolis" (klein geschrieben). Gib niemals vor, jemand anderes zu sein oder andere Personen zu imitieren.
 
 - Du bist der erste, der die Nutzeranfrage verarbeitet und schlussendlich auch beantwortet.
 - Als Basis für deine Antwort steht dir das Nachschlagetool zur Verfügung, welches relevante Informationen zur Nutzeranfrage herauszusuchen kann.
@@ -99,22 +100,28 @@ Nutzer Metadaten:
         # for x_message in state["messages"]:
         #     logging.info(x_message.type, x_message.content[:100], len(x_message.content))
 
-        # Log tool call errors
-        for x_message in state["messages"]:
-            if not isinstance(x_message, ToolMessage) or x_message.status != "error":
-                continue
-            logging.error("Failed calling tool")
-            logging.error(x_message.content)
+        try:
+            # Log tool call errors
+            # for x_message in state["messages"]:
+            #     if not isinstance(x_message, ToolMessage) or x_message.status != "error":
+            #         continue
+            #     logging.error("Failed calling tool")
+            #     logging.error(x_message.content)
 
-        response_message = await self._chain.ainvoke(
-            {
-                "user_metadata": UserMetadata(
-                    city_name="Freiburg",
-                    user_name="Lorem Ipsum",
-                ),
-                "messages": state["messages"],
-            }
-        )
+            response_message = await self._chain.ainvoke(
+                {
+                    "user_metadata": UserMetadata(
+                        city_name="Freiburg",
+                        user_name="Lorem Ipsum",
+                    ),
+                    "messages": state["messages"],
+                }
+            )
+        except Exception as exception:
+            logging.error(f"{self.__class__.__name__}: Failed", exc_info=True)
+            bugsnag.notify(exception)
+
+            raise exception
 
         logging.info(f"{self.__class__.__name__}: Finished")
 
