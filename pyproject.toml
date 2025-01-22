@@ -14,10 +14,10 @@ langgraph = "^0.2.34"
 langchain-core = "^0.3.9"
 langgraph-checkpoint = "^2.0.1"
 langserve = "^0.3.0"
-neurapolis-retriever = { git = "https://github.com/neuraflow-github/neurapolis-retriever.git" }
+neurapolis-retriever = { git = "https://github.com/neuraflow-github/neurapolis-retriever.git", branch = "main" }
 langchain-anthropic = "^0.2.3"
 langgraph-checkpoint-postgres = "^2.0.6"
-neurapolis-common = { git = "https://github.com/neuraflow-github/neurapolis-common.git" }
+neurapolis-common = { git = "https://github.com/neuraflow-github/neurapolis-common.git", branch = "main" }
 psycopg-binary = "^3.2.3"
 langchain-aws = "^0.2.9"
 bugsnag = "^4.7.1"
