@@ -4,23 +4,27 @@ from operator import itemgetter
 
 import bugsnag
 from langchain_aws import ChatBedrock
-from langchain_core.messages import ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import Runnable, RunnableLambda
+from langchain_core.runnables import RunnableLambda
 from neurapolis_cognitive_architecture.config import config
 from neurapolis_cognitive_architecture.models import State
 from neurapolis_cognitive_architecture.utilities import truncate_messages
+from neurapolis_common import UserMetadata, common_user_metadata
 from neurapolis_common import config as common_config
-from neurapolis_retriever import UserMetadata
 
 from .tool_node import tools
 
 
 class AgentNode:
-    _chain: Runnable
+    async def agent(self, state: State) -> dict:
+        logging.info(f"{self.__class__.__name__}: Started")
 
-    def __init__(self):
-        prompt_template_string = """Generell:
+        # logging.info(len(state["messages"]))
+        # for x_message in state["messages"]:
+        #     logging.info(x_message.type, x_message.content[:100], len(x_message.content))
+
+        try:
+            prompt_template_string = """Generell:
 
 - Du bist Teil einer Retrieval Augmented Generation Anwendung zur Durchsuchung eines Rats-Informations-Systems (RIS). Genauer bist du Teil des KI-Agentens, welcher aus mehreren LLM-Modulen besteht, welche zusammenarbeiten, um Nutzeranfragen zu dem RIS zu beantworten.
 - Das RIS ist ein internes System für Politiker und städtische Mitarbeiter, das ihnen bei ihrer Arbeit hilft. Es ist eine Datenbank, welche Informationen einer bestimmten Stadt über Organisationen, Personen, Sitzungen, Dateien usw. enthält.
@@ -57,63 +61,46 @@ Aktuelles Datum und Uhrzeit: {formatted_current_datetime}
 Nutzer Metadaten:
 
 <Nutzer Metadaten>
-{user_metadata}
+{inner_user_metadata_xml}
 </Nutzer Metadaten>"""
-        system_message = ChatPromptTemplate.from_template(prompt_template_string)
-        chat_prompt_template = ChatPromptTemplate(
-            [
-                system_message,
-                MessagesPlaceholder(variable_name="messages"),
-            ]
-        )
-        llm = ChatBedrock(
-            aws_access_key_id=common_config.aws_access_key_id,
-            aws_secret_access_key=common_config.aws_secret_access_key,
-            region=common_config.aws_region,
-            model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
-            max_tokens=4096,
-            temperature=0,
-            # timeout=120,  # 2 minutes
-        )
-        tooled_llm = llm.bind_tools(tools)
-        self._chain = (
-            {
-                "formatted_current_datetime": lambda x: datetime.now().strftime(
-                    "%d.%m.%Y %H:%M"
-                ),
-                "user_metadata": lambda x: x["user_metadata"].format_to_inner_llm_xml(),
-                "messages": itemgetter("messages"),
-            }
-            | chat_prompt_template
-            | RunnableLambda(
-                lambda x: truncate_messages(
-                    x, token_limit=config.context_window_token_limit
-                )
+            system_message = ChatPromptTemplate.from_template(prompt_template_string)
+            chat_prompt_template = ChatPromptTemplate(
+                [
+                    system_message,
+                    MessagesPlaceholder(variable_name="messages"),
+                ]
             )
-            | tooled_llm
-        )
-
-    async def agent(self, state: State) -> dict:
-        logging.info(f"{self.__class__.__name__}: Started")
-
-        # logging.info(len(state["messages"]))
-        # for x_message in state["messages"]:
-        #     logging.info(x_message.type, x_message.content[:100], len(x_message.content))
-
-        try:
-            # Log tool call errors
-            # for x_message in state["messages"]:
-            #     if not isinstance(x_message, ToolMessage) or x_message.status != "error":
-            #         continue
-            #     logging.error("Failed calling tool")
-            #     logging.error(x_message.content)
-
-            response_message = await self._chain.ainvoke(
+            llm = ChatBedrock(
+                aws_access_key_id=common_config.aws_access_key_id,
+                aws_secret_access_key=common_config.aws_secret_access_key,
+                region=common_config.aws_region,
+                model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
+                max_tokens=4096,
+                temperature=0,
+                # timeout=120,  # 2 minutes
+            )
+            tooled_llm = llm.bind_tools(tools)
+            chain = (
                 {
-                    "user_metadata": UserMetadata(
-                        city_name="Freiburg",
-                        user_name="Lorem Ipsum",
+                    "formatted_current_datetime": lambda x: datetime.now().strftime(
+                        "%d.%m.%Y %H:%M"
                     ),
+                    "inner_user_metadata_xml": lambda x: x[
+                        "user_metadata"
+                    ].format_to_inner_llm_xml(),
+                    "messages": itemgetter("messages"),
+                }
+                | chat_prompt_template
+                | RunnableLambda(
+                    lambda x: truncate_messages(
+                        x, token_limit=config.context_window_token_limit
+                    )
+                )
+                | tooled_llm
+            )
+            response_message = await chain.ainvoke(
+                {
+                    "user_metadata": common_user_metadata,
                     "messages": state["messages"],
                 }
             )
