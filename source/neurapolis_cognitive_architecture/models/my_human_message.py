@@ -10,6 +10,7 @@ from .message import Message
 
 class MyHumanMessage(Message, HumanMessage):
     role: MessageRole = Field(MessageRole.HUMAN, frozen=True)
+    mentioned_file_ids: list[str] = Field([])
     date_filter: Optional[DateFilter] = Field(None)
     quality_preset: QualityPreset = Field()
 
@@ -18,6 +19,7 @@ class MyHumanMessage(Message, HumanMessage):
             "id": self.id,
             "role": self.role.value,
             "content": self.content,
+            "mentionedFileIds": self.mentioned_file_ids,
             "dateFilter": (
                 None if self.date_filter is None else self.date_filter.convert_to_data()
             ),
@@ -29,6 +31,7 @@ class MyHumanMessage(Message, HumanMessage):
         return cls(
             id=data["id"],
             content=data["content"],
+            mentioned_file_ids=data["mentionedFileIds"],
             date_filter=(
                 None
                 if data.get("dateFilter") is None

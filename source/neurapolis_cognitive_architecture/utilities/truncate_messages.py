@@ -5,7 +5,7 @@ from neurapolis_common import config as common_config
 
 
 def truncate_messages(
-    chat_prompt_value: ChatPromptValue, token_limit: int
+    chat_prompt_value: ChatPromptValue, max_token_count: int
 ) -> ChatPromptValue:
     """
     Truncates messages to fit within a token limit. It starts with the system message and then goes from the newest message to the oldest. It tries to stuff as many messages as possible into the token limit. When it can not stuff a tool message anymore it skips it. But when it can not stuff a human or ai message anymore it stops.
@@ -51,7 +51,7 @@ def truncate_messages(
             )
             token_count = llm.get_num_tokens_from_messages(candidate_truncated_messages)
 
-            if token_count <= token_limit:
+            if token_count <= max_token_count:
                 # Only add the tool result tool message. The next iteration of the loop will add the tool calling ai message. That one will fit anyways, because we already checked above, that both will fit in
                 truncated_messages.insert(1, x_message)
                 large_context_message_count += 1
@@ -74,7 +74,7 @@ def truncate_messages(
             )
             token_count = llm.get_num_tokens_from_messages(candidate_truncated_messages)
 
-            if token_count <= token_limit:
+            if token_count <= max_token_count:
                 truncated_messages.insert(1, x_message)
             else:
                 break

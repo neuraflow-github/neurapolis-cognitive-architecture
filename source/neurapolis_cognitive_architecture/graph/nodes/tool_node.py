@@ -45,10 +45,16 @@ async def retrieve(
             if isinstance(x_event, LoaderUpdate):
                 await config["configurable"]["send_loader_update_to_client"](x_event)
             elif isinstance(x_event, list):
-                references = x_event[: my_config.reference_limit]
+                references = x_event
 
-        capped_references = references[: my_config.llm_context_reference_limit]
-        inner_xml = Reference.format_multiple_to_inner_llm_xml(capped_references)
+        capped_references = references[: state["config"].max_reference_count]
+
+        capped_llm_context_references = references[
+            : state["config"].max_llm_context_reference_count
+        ]
+        inner_xml = Reference.format_multiple_to_inner_llm_xml(
+            capped_llm_context_references
+        )
         xml = f"<{Reference.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{Reference.get_llm_xml_tag_name_prefix()}>"
     except Exception as exception:
         logging.error("ToolNode: Failed", exc_info=True)
@@ -58,7 +64,7 @@ async def retrieve(
 
     logging.info("ToolNode: Finished retrieving")
 
-    return xml, references
+    return xml, capped_references
 
 
 tools: list[BaseTool] = [retrieve]

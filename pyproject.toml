@@ -21,6 +21,7 @@ neurapolis-common = { git = "https://github.com/neuraflow-github/neurapolis-comm
 psycopg-binary = "^3.2.3"
 langchain-aws = "^0.2.9"
 bugsnag = "^4.7.1"
+langchain-openai = "^0.2.8"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"

@@ -11,6 +11,9 @@ from neurapolis_cognitive_architecture.models import (
     MyHumanMessage,
     State,
 )
+from neurapolis_cognitive_architecture.utilities import (
+    get_cognitive_architecture_config_by_quality_preset,
+)
 from neurapolis_common import config as common_config
 from neurapolis_common import get_last_message_of_type
 from neurapolis_retriever import LoaderUpdate, Reference
@@ -25,7 +28,14 @@ class NeurapolisCognitiveArchitecture:
         send_ai_message_to_client: Callable[[MyAiMessage], None],
     ):
         messages: list[MyHumanMessage] = [human_message]
-        state = State(messages=messages)
+
+        cognitive_architecture_config = (
+            get_cognitive_architecture_config_by_quality_preset(
+                human_message.quality_preset
+            )
+        )
+
+        state = State(config=cognitive_architecture_config, messages=messages)
 
         runnable_config = RunnableConfig(
             configurable=GraphConfig(

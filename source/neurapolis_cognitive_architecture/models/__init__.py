@@ -1,3 +1,4 @@
+from .cognitive_architecture_config import CognitiveArchitectureConfig
 from .graph_config import GraphConfig
 from .message import Message
 from .my_ai_message import MyAiMessage

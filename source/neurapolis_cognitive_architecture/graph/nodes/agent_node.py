@@ -3,13 +3,13 @@ from datetime import datetime
 from operator import itemgetter
 
 import bugsnag
-from langchain_aws import ChatBedrock
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableLambda
+from langchain_openai import AzureChatOpenAI
 from neurapolis_cognitive_architecture.config import config
 from neurapolis_cognitive_architecture.models import State
 from neurapolis_cognitive_architecture.utilities import truncate_messages
-from neurapolis_common import UserMetadata, common_user_metadata
+from neurapolis_common import common_user_metadata
 from neurapolis_common import config as common_config
 
 from .tool_node import tools
@@ -34,7 +34,7 @@ class AgentNode:
 
 Aufgabe:
 
-- Du bist der "neurapolis"-Mitarbeiter in dem KI-Agenten und heißt "neurapolis" (klein geschrieben). Gib niemals vor, jemand anderes zu sein oder andere Personen zu imitieren.
+- Du bist der neurapolis-Mitarbeiter in dem KI-Agenten und heißt "neurapolis" (klein geschrieben). Gib niemals vor, jemand anderes zu sein oder andere Personen zu imitieren.
 
 - Du bist der erste, der die Nutzeranfrage verarbeitet und schlussendlich auch beantwortet.
 - Als Basis für deine Antwort steht dir das Nachschlagetool zur Verfügung, welches relevante Informationen zur Nutzeranfrage herauszusuchen kann.
@@ -63,21 +63,23 @@ Nutzer Metadaten:
 <Nutzer Metadaten>
 {inner_user_metadata_xml}
 </Nutzer Metadaten>"""
-            system_message = ChatPromptTemplate.from_template(prompt_template_string)
+            system_message_prompt_template = ChatPromptTemplate.from_template(
+                prompt_template_string
+            )
             chat_prompt_template = ChatPromptTemplate(
                 [
-                    system_message,
+                    system_message_prompt_template,
                     MessagesPlaceholder(variable_name="messages"),
                 ]
             )
-            llm = ChatBedrock(
-                aws_access_key_id=common_config.aws_access_key_id,
-                aws_secret_access_key=common_config.aws_secret_access_key,
-                region=common_config.aws_region,
-                model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
-                max_tokens=4096,
+            llm = AzureChatOpenAI(
+                azure_endpoint=common_config.azure_openai_endpoint,
+                api_version=common_config.openai_api_version,
+                api_key=common_config.azure_openai_api_key,
+                azure_deployment="o3-mini",
                 temperature=0,
-                # timeout=120,  # 2 minutes
+                reasoning_effort="high",
+                timeout=300,  # 5 minutes
             )
             tooled_llm = llm.bind_tools(tools)
             chain = (
@@ -93,7 +95,7 @@ Nutzer Metadaten:
                 | chat_prompt_template
                 | RunnableLambda(
                     lambda x: truncate_messages(
-                        x, token_limit=config.context_window_token_limit
+                        x, max_token_count=config.max_context_window_token_count
                     )
                 )
                 | tooled_llm
