@@ -77,7 +77,7 @@ Nutzer Metadaten:
             print(common_config.azure_openai_endpoint)
             llm = AzureChatOpenAI(
                 azure_endpoint=common_config.azure_openai_endpoint,
-                api_version="2024-12-01",
+                api_version="2024-12-01-preview",
                 api_key=common_config.azure_openai_api_key,
                 azure_deployment="o3-mini",
                 temperature=0,
