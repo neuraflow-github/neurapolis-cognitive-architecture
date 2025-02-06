@@ -77,7 +77,7 @@ Nutzer Metadaten:
                 api_version="2024-12-01-preview",
                 api_key=common_config.azure_openai_api_key,
                 azure_deployment="o3-mini",
-                reasoning_effort="high",
+                reasoning_effort=state["config"].openai_reasoning_effort,
                 timeout=300,  # 5 minutes
             )
             tooled_llm = llm.bind_tools(tools)
