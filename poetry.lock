@@ -2576,7 +2576,7 @@ qdrant-client = "^1.12.0"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-common.git"
 reference = "main"
-resolved_reference = "1a30c9e9ba611387550431a58631a69da143f36c"
+resolved_reference = "3cb0b411568cf18f72bce002b2e2491d7506a39b"
 
 [[package]]
 name = "neurapolis-retriever"
@@ -2604,7 +2604,7 @@ rich = "^13.8.1"
 type = "git"
 url = "https://github.com/neuraflow-github/neurapolis-retriever.git"
 reference = "main"
-resolved_reference = "b67987f30c6717ab03ef215873c32514887ba96f"
+resolved_reference = "1bb8ee24dd3899612a65fc859f2b2ad28538b1cb"
 
 [[package]]
 name = "numpy"
