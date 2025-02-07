@@ -15,9 +15,11 @@ class MentionedFilesRetrieverNode:
                 state["messages"], MyHumanMessage
             )
 
+            print(last_human_message.mentioned_file_ids)
             if len(last_human_message.mentioned_file_ids) == 0:
                 content = "Der Nutzer hat sich auf keine Dateien bezogen."
             else:
+                print("Hi 1")
                 async with Neo4jDbSessionBuilder.build() as neo4j_db_session:
                     neo4j_db_query = """
                     MATCH (file_node:File)
@@ -35,6 +37,8 @@ class MentionedFilesRetrieverNode:
                         )
                         files.append(file)
 
+                print("Hi 2")
+                print(files)
                 inner_xml = File.format_multiple_to_inner_llm_xml(files)
                 xml = f"<{File.get_llm_xml_tag_name_prefix()}>\n{inner_xml}\n</{File.get_llm_xml_tag_name_prefix()}>"
                 found_files_content = (
@@ -57,6 +61,9 @@ class MentionedFilesRetrieverNode:
                 if len(not_found_file_ids) > 0:
                     not_found_file_ids_content = f"Der Nutzer hat sich außerdem auf die Dateien mit den folgenden IDs bezogen, welche aber nicht in der Datenbank sind: {', '.join(not_found_file_ids)}"
                     content += f"\n\n\n{not_found_file_ids_content}"
+
+                print("Hi 3")
+            print(content)
 
             message = HumanMessage(content=content)
         except Exception as exception:
