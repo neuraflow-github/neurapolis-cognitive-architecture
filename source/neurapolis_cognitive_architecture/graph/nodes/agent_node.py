@@ -74,12 +74,21 @@ Nutzer Metadaten:
             )
             llm = AzureChatOpenAI(
                 azure_endpoint=common_config.azure_openai_endpoint,
-                api_version="2024-12-01-preview",
+                api_version="2024-08-01",
                 api_key=common_config.azure_openai_api_key,
-                azure_deployment="o3-mini",
-                reasoning_effort=state["config"].openai_reasoning_effort,
+                azure_deployment="gpt-4o",
+                # reasoning_effort=state["config"].openai_reasoning_effort,
+                temperature=0,
                 timeout=300,  # 5 minutes
             )
+            # llm = AzureChatOpenAI(
+            #     azure_endpoint=common_config.azure_openai_endpoint,
+            #     api_version="2024-12-01-preview",
+            #     api_key=common_config.azure_openai_api_key,
+            #     azure_deployment="o3-mini",
+            #     reasoning_effort=state["config"].openai_reasoning_effort,
+            #     timeout=300,  # 5 minutes
+            # )
             tooled_llm = llm.bind_tools(tools)
             chain = (
                 {
