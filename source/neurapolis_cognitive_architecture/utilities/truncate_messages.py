@@ -19,7 +19,7 @@ def truncate_messages(
 
     llm = AzureChatOpenAI(
         # azure_endpoint=common_config.azure_openai_endpoint,
-        # api_version="2024-12-01-preview",
+        api_version="2024-12-01-preview",
         api_key=common_config.azure_openai_api_key,
         # azure_deployment="gpt-4o",
         model="gpt-4o",  # Needed for token counting
