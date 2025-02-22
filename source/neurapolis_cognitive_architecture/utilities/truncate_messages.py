@@ -18,10 +18,10 @@ def truncate_messages(
     reversed_other_messages = list(reversed(messages[1:]))
 
     llm = AzureChatOpenAI(
-        azure_endpoint=common_config.azure_openai_endpoint,
-        api_version="2024-08-01",
-        api_key=common_config.azure_openai_api_key,
-        azure_deployment="gpt-4o",
+        # azure_endpoint=common_config.azure_openai_endpoint,
+        # api_version="2024-12-01-preview",
+        # api_key=common_config.azure_openai_api_key,
+        # azure_deployment="gpt-4o",
         model="gpt-4o",  # Needed for token counting
     )
 
