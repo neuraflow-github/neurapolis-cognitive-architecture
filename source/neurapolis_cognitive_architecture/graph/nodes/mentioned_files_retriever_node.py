@@ -21,7 +21,7 @@ class MentionedFilesRetrieverNode:
                 content = "Der Nutzer hat sich auf keine Dateien bezogen."
             else:
                 print("Hi 1")
-                async with Neo4jDbSessionBuilder().build() as neo4j_db_session:
+                async with Neo4jDbSessionBuilder().build_async() as neo4j_db_session:
                     neo4j_db_query = """
                     MATCH (file_node:File)
                     WHERE file_node.id IN $file_ids
